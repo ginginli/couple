@@ -837,7 +837,7 @@
       document.getElementById('player-modal-title').textContent = wInfo[appState.lang] + t('playerSubtitle');
       document.getElementById('player-role1-name').textContent = exampleIndex === 1 ? t('sampleDog') : t('roleInfected');
       document.getElementById('player-role2-name').textContent = t('roleSurvivorYou');
-      document.getElementById('player-meta-badge').textContent = appState.resolution + ' · 9:16 · Seedance V2.5';
+      document.getElementById('player-meta-badge').textContent = appState.resolution + ' · 9:16 · Multiple SOTA models';
 
       var modal = document.getElementById('cinema-modal');
       modal.classList.remove('hidden');
@@ -856,7 +856,7 @@
       document.getElementById('player-role1-name').textContent = w.role1;
       document.getElementById('player-role2-name').textContent = w.role2;
       document.getElementById('player-meta-badge').textContent =
-        w.resolution + ' · 9:16 · ' + (w.modelLabel || (w.provider === 'atlas' ? 'Atlas Cloud' : 'fal.ai'));
+        w.resolution + ' · 9:16 · Multiple SOTA models';
 
       var modal = document.getElementById('cinema-modal');
       modal.classList.remove('hidden');
