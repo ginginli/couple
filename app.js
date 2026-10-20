@@ -126,7 +126,7 @@
           worldKey: 'city',
           worldLabel: t('worldCity'),
           resolution: '720p',
-          creditsCost: 645,
+          creditsCost: 600,
           role1: t('rolePartner'),
           role2: t('roleSurvivor'),
           coverSrc: ASSET_BASE + 'scene-ruined-city.jpg',
@@ -140,30 +140,33 @@
         value: 'an abandoned city street',
         zh: '废墟城市',
         en: 'Ruined city',
-        cover: ASSET_BASE + 'scene-ruined-city.jpg'
+        cover: ASSET_BASE + 'scene-ruined-city.jpg',
+        video: ASSET_BASE + 'videos/scene-ruined-city.mp4'
       },
       snow: {
         value: 'a snowy, abandoned mountain town',
         zh: '雪中小镇',
         en: 'Snowy town',
-        cover: ASSET_BASE + 'scene-snow-town.jpg'
+        cover: ASSET_BASE + 'scene-snow-town.jpg',
+        video: ASSET_BASE + 'videos/scene-snow-town.mp4'
       },
       highway: {
         value: 'an empty highway lined with abandoned cars',
         zh: '空荡公路',
         en: 'Empty highway',
-        cover: ASSET_BASE + 'scene-highway.jpg'
+        cover: ASSET_BASE + 'scene-highway.jpg',
+        video: ASSET_BASE + 'videos/scene-highway.mp4'
       }
     };
 
     var TIER_PRICES = {
-      '480p': 310,
-      '720p': 645,
-      '1080p': 2000
+      '480p': 350,
+      '720p': 600,
+      '1080p': 1050
     };
 
-    // Exchange rate: 1 credit = $0.0025  ->  400 credits = $1
-    var CREDIT_USD = 0.0025;
+    // Exchange rate: 1 credit = $0.005  ->  200 credits = $1
+    var CREDIT_USD = 0.005;
 
     function creditsToUsd(credits) {
       return '$' + (credits * CREDIT_USD).toFixed(2);
@@ -185,7 +188,7 @@
         { q: "可以用我家的猫或狗吗？", a: "可以，作为第 1 张上传。你的宠物会带着蒙尘的毛、浑浊的眼睛从雾里走出来，朝你冲过来，到了晴天那一幕把你扑倒撒娇。宠物的效果比人稍微不稳定一些，请用能看清整只动物的清晰照片。" },
         { q: "会很血腥吗？", a: "不会。枪从头到尾没有开火，幸存者把它放下、扔在地上。没有血，也没有撕咬。被感染的样子只是皮肤发灰、有暗色血管、眼睛泛白，脸还是认得出来的那张脸，结尾是温暖的大笑拥抱。这是催泪短片，不是恐怖片。" },
         { q: "视频多长、什么比例？", a: "13 秒，竖版 9:16，带声音：紧张的心跳声在转场那一刻变成温柔的钢琴。默认 720p，也可以选 480p 或 1080p。" },
-        { q: "要多少积分？", a: "480p 每次 310 积分（≈ $0.78），720p 645 积分（≈ $1.61），1080p 2,000 积分（≈ $5.00）。1 积分 = $0.0025，即 400 积分 = $1。开始生成前，生成按钮上会显示准确价格。" },
+        { q: "要多少积分？", a: "480p 每次 350 积分（≈ $1.75），720p 600 积分（≈ $3.00），1080p 1,050 积分（≈ $5.25）。1 积分 = $0.005，即 200 积分 = $1。开始生成前，生成按钮上会显示准确价格。" },
         { q: "会和照片一模一样吗？", a: "认得出是谁，但不是逐像素相同。被感染的样子会让脸更苍白、略显消瘦，推在头顶的眼镜这类小配饰也可能不见。正脸清晰的照片最能保住长相。" },
         { q: "什么是 AI 僵尸特效？", a: "九月底开始火起来的一种短视频：病毒爆发后灰蒙蒙的世界里，有人举枪对准自己最爱的人，对方已经被感染，TA 下不了手，被拉进一个拥抱，画面切回更快乐的一天。也叫僵尸爱情故事，做得最多的是情侣和养宠物的人。" },
         { q: "可以用谁的照片？", a: "只能用成年人或宠物的照片，并且对方愿意出镜。正脸清晰、脸部完整露出的照片效果最好。" }
@@ -196,7 +199,7 @@
         { q: "Can I use my dog or cat?", a: "Yes, as photo 1. Your pet comes out of the fog with dusty fur and clouded eyes, races toward you, and in the sunny version knocks you over for a cuddle. Use a clear photo where the whole animal is visible." },
         { q: "Is it gory?", a: "No. The gun is never fired: the survivor lowers it and lets it drop. There is no blood and no biting. The infected look is ashen, veined skin and milky eyes on a face you still recognize, and the clip ends in a warm, laughing hug." },
         { q: "How long is it, and what shape?", a: "Thirteen seconds, vertical 9:16, with sound: a tense heartbeat that turns into a soft piano at the cut. It renders at 720p by default; you can drop to 480p or go up to 1080p." },
-        { q: "How many credits does it cost?", a: "310 credits (≈ $0.78) at 480p, 645 (≈ $1.61) at 720p and 2,000 (≈ $5.00) at 1080p. 1 credit = $0.0025, so 400 credits = $1. The exact price shows on the Generate button before you start." },
+        { q: "How many credits does it cost?", a: "350 credits (≈ $1.75) at 480p, 600 (≈ $3.00) at 720p and 1,050 (≈ $5.25) at 1080p. 1 credit = $0.005, so 200 credits = $1. The exact price shows on the Generate button before you start." },
         { q: "Will it look exactly like them?", a: "Close enough to tell who it is, but not pixel-perfect. Clear, front-facing photos keep the likeness best." },
         { q: "What is the AI zombie trend?", a: "A short-video format that went viral at the end of September. In a grey world after an outbreak, someone raises a gun at the person they love most, cannot shoot, and gets pulled into a hug as the clip cuts to a happier day." },
         { q: "Whose photos can I use?", a: "Adults and pets only, and only people who are happy to star in it. Clear, front-facing photos with the face fully visible work best." }
@@ -845,8 +848,7 @@
       appState.player.currentTime = 0;
       appState.player.lastBeatTime = -1;
       appState.player.pianoPlayed = false;
-      updatePlayerVisualState(0);
-      startPlayerLoop();
+      showPlayerMedia(wInfo.video, wInfo.cover);
     }
 
     function openPreviewModalByWork(workIndex) {
@@ -864,30 +866,70 @@
       appState.player.currentTime = 0;
       appState.player.lastBeatTime = -1;
       appState.player.pianoPlayed = false;
+      showPlayerMedia(w.videoUrl, w.coverSrc);
+    }
+
+    // 播放器媒体切换：有真实视频就播视频，没有就退回动画模拟
+    function showPlayerMedia(videoSrc, coverSrc) {
+      var imgEl = document.getElementById('player-main-img');
+      if (imgEl) imgEl.src = coverSrc;
+
       var videoEl = ensureRealVideoEl();
-      var hasVideo = !!(w.videoUrl && videoEl);
+      var hasVideo = !!(videoSrc && videoEl);
       if (hasVideo) {
-        videoEl.src = w.videoUrl;
+        if (videoEl.getAttribute('src') !== videoSrc) {
+          videoEl.src = videoSrc;
+        }
+        if (coverSrc) videoEl.setAttribute('poster', coverSrc);
+        videoEl.currentTime = 0;
         videoEl.classList.remove('hidden');
-        var p = videoEl.play();
-        if (p && p.catch) p.catch(function () {});
+        playRealVideo(videoEl);
       } else if (videoEl) {
         videoEl.pause();
         videoEl.removeAttribute('src');
         videoEl.classList.add('hidden');
       }
-      toggleClass(document.getElementById('player-main-img'), 'hidden', hasVideo);
+      toggleClass(imgEl, 'hidden', hasVideo);
       toggleClass(document.getElementById('player-fog-overlay'), 'hidden', hasVideo);
       toggleClass(document.getElementById('player-warm-overlay'), 'hidden', hasVideo);
       toggleClass(document.getElementById('player-flash-overlay'), 'hidden', hasVideo);
 
       if (hasVideo) {
         stopPlayerLoop();
+        syncAudioButton();
         return;
       }
-
       updatePlayerVisualState(0);
       startPlayerLoop();
+    }
+
+    function playRealVideo(el) {
+      var p = el.play();
+      if (p && p.catch) {
+        p.catch(function () {
+          // 浏览器通常禁止带声自动播放：静音后重试
+          el.muted = true;
+          var p2 = el.play();
+          if (p2 && p2.catch) p2.catch(function () {});
+          syncAudioButton();
+        });
+      }
+    }
+
+    function getActiveVideo() {
+      var el = document.getElementById('cinema-real-video');
+      if (!el || el.classList.contains('hidden') || !el.getAttribute('src')) return null;
+      return el;
+    }
+
+    function syncAudioButton() {
+      var v = getActiveVideo();
+      var icon = document.getElementById('player-audio-icon');
+      var label = document.getElementById('player-audio-label');
+      if (!icon) return;
+      var muted = v ? v.muted : appState.player.isMuted;
+      icon.textContent = muted ? '🔇' : '🔊';
+      if (label) label.textContent = muted ? t('muted') : t('audioScore');
     }
 
     function toggleClass(el, cls, force) {
@@ -912,6 +954,24 @@
       el.setAttribute('controls', '');
       el.setAttribute('playsinline', '');
       el.setAttribute('preload', 'metadata');
+      el.loop = true;
+      el.addEventListener('timeupdate', function () {
+        appState.player.currentTime = el.currentTime;
+        updatePlayerVisualState(el.currentTime);
+      });
+      el.addEventListener('loadedmetadata', function () {
+        var scrubber = document.getElementById('player-scrubber');
+        if (scrubber && el.duration) scrubber.max = el.duration.toFixed(1);
+      });
+      el.addEventListener('play', function () {
+        var icon = document.getElementById('player-playpause-icon');
+        if (icon) icon.textContent = '⏸';
+      });
+      el.addEventListener('pause', function () {
+        var icon = document.getElementById('player-playpause-icon');
+        if (icon) icon.textContent = '▶';
+      });
+      el.addEventListener('volumechange', syncAudioButton);
       stage.parentNode.insertBefore(el, stage);
       return el;
     }
@@ -953,6 +1013,11 @@
     }
 
     function togglePlayPause() {
+      var v = getActiveVideo();
+      if (v) {
+        if (v.paused) { playRealVideo(v); } else { v.pause(); }
+        return;
+      }
       if (appState.player.isPlaying) {
         stopPlayerLoop();
       } else {
@@ -961,6 +1026,12 @@
     }
 
     function togglePlayerAudio() {
+      var v = getActiveVideo();
+      if (v) {
+        v.muted = !v.muted;
+        syncAudioButton();
+        return;
+      }
       appState.player.isMuted = !appState.player.isMuted;
       document.getElementById('player-audio-icon').textContent = appState.player.isMuted ? '🔇' : '🔊';
       document.getElementById('player-audio-label').textContent = appState.player.isMuted ? t('muted') : t('audioScore');
@@ -968,6 +1039,8 @@
 
     function scrubPlayer(val) {
       var t = parseFloat(val) || 0;
+      var v = getActiveVideo();
+      if (v) { try { v.currentTime = t; } catch (e) {} }
       appState.player.currentTime = t;
       appState.player.lastBeatTime = -1;
       appState.player.pianoPlayed = false;
@@ -1117,7 +1190,7 @@
 
     // 购买单位是积分包：余额不足时高亮“够用的最小包”
     function highlightCreditPack(neededCredits) {
-      var packs = [2000, 5500, 13000];
+      var packs = [2000, 6000, 13000];
       var picked = 0;
       packs.forEach(function (amount) {
         var el = document.getElementById('pack-card-' + amount);
@@ -1143,9 +1216,9 @@
 
     // 真实收款：填入 Stripe Payment Link 后自动跳转；留空则是演示模式（直接加积分）
     var STRIPE_PAYMENT_LINKS = {
-      // '2000': 'https://buy.stripe.com/xxxx_starter',
-      // '5500': 'https://buy.stripe.com/xxxx_popular',
-      // '13000': 'https://buy.stripe.com/xxxx_pro'
+      // '2000':  'https://buy.stripe.com/xxxx_starter',   // $9.90
+      // '6000':  'https://buy.stripe.com/xxxx_popular',   // $26.90
+      // '13000': 'https://buy.stripe.com/xxxx_pro'        // $54.90
     };
 
     function purchaseCredits(amount, priceLabel) {
