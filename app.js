@@ -1231,12 +1231,49 @@
 
     function openTopupModal(neededCredits) {
       document.getElementById('topup-modal').classList.remove('hidden');
+      // 余额不足时预选“够用的最小包”，否则默认 Popular
+      var packs = [2000, 3000, 20000];
+      var picked = 3000;
+      for (var i = 0; i < packs.length; i++) {
+        if (neededCredits && packs[i] >= neededCredits) { picked = packs[i]; break; }
+      }
+      selectPack(picked);
       highlightCreditPack(neededCredits);
     }
 
-    // 购买单位是积分包：余额不足时高亮“够用的最小包”
+    // 选中某一档：整卡可点，选中态互斥（三选一）
+    var PACK_AMOUNTS = [2000, 3000, 20000];
+
+    function selectPack(amount) {
+      appState.selectedPack = amount;
+      PACK_AMOUNTS.forEach(function (n) {
+        var el = document.getElementById('pack-card-' + n);
+        if (!el) return;
+        var on = n === amount;
+        el.classList.toggle('zc-pack--selected', on);
+        el.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+    }
+
+    function packKeydown(event, amount) {
+      if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+        event.preventDefault();
+        selectPack(amount);
+      }
+      // 左右方向键在三个档位间移动
+      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+        event.preventDefault();
+        var i = PACK_AMOUNTS.indexOf(amount);
+        var next = PACK_AMOUNTS[(i + (event.key === 'ArrowRight' ? 1 : PACK_AMOUNTS.length - 1)) % PACK_AMOUNTS.length];
+        selectPack(next);
+        var el = document.getElementById('pack-card-' + next);
+        if (el) el.focus();
+      }
+    }
+
+    // 余额不足时额外标注“够用的最小包”的提示文案
     function highlightCreditPack(neededCredits) {
-      var packs = [2000, 3000, 20000];
+      var packs = PACK_AMOUNTS;
       var picked = 0;
       packs.forEach(function (amount) {
         var el = document.getElementById('pack-card-' + amount);
@@ -1618,6 +1655,8 @@
       renderWorksGrid();
       updatePromptAndPriceUI();
       initCardVideos();
+      appState.selectedPack = 3000;
+      selectPack(3000);
       syncAccount();
       handleTopupReturn();
     });

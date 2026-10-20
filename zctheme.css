@@ -760,7 +760,47 @@ section[id^="sec-"] > h2 {
 
 .zc-hero .zc-chip { padding: 0.5rem 0.9rem; font-size: 13px; }
 
-/* 积分包：余额不足时高亮“够用的最小包” */
+/* 积分包：可点击选择（默认整卡可点，键盘 Enter/Space 同效） */
+.zc-pack {
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+.zc-pack:hover { border-color: color-mix(in srgb, var(--zc-infect) 45%, transparent); }
+.zc-pack:focus-visible { outline: 2px solid var(--zc-infect); outline-offset: 2px; }
+
+/* 选中态：红框 + 淡红底 + 外发光，与未选中明显区分 */
+.zc-pack--selected {
+  border: 2px solid var(--zc-infect) !important;
+  background: var(--color-accent-soft) !important;
+  box-shadow: var(--zc-glow-infect);
+}
+.zc-pack--selected button {
+  background: var(--zc-infect) !important;
+  color: #fff !important;
+}
+.zc-pack--selected button:hover { background: var(--color-accent-hover) !important; }
+
+/* 选中卡的角标：打勾，明确“已选这一档” */
+.zc-pack__check {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 9999px;
+  background: var(--zc-infect);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.125rem;
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.zc-pack--selected .zc-pack__check { opacity: 1; transform: scale(1); }
+
+/* 余额不足时高亮“够用的最小包” */
 .zc-pack--recommended {
   border-color: var(--zc-infect) !important;
   box-shadow: var(--zc-glow-infect);
