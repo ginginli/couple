@@ -184,6 +184,8 @@
         { q: "会和照片一模一样吗？", a: "认得出是谁，但不是逐像素相同。被感染的样子会让脸更苍白、略显消瘦，推在头顶的眼镜这类小配饰也可能不见。正脸清晰的照片最能保住长相。" },
         { q: "什么是 AI 僵尸特效？", a: "九月底开始火起来的一种短视频：病毒爆发后灰蒙蒙的世界里，有人举枪对准自己最爱的人，对方已经被感染，TA 下不了手，被拉进一个拥抱，画面切回更快乐的一天。也叫僵尸爱情故事，做得最多的是情侣和养宠物的人。" },
         { q: "可以用谁的照片？", a: "只能用成年人或宠物的照片，并且对方愿意出镜。正脸清晰、脸部完整露出的照片效果最好。" }
+        ,{ q: "怎么把照片变成僵尸视频？", a: "上传一张正面清晰的照片就行：AI 僵尸特效会保留同一张脸、发型和衣服，只把颜色抽干，四到五分钟后你的照片就变成一段 13 秒的僵尸视频。" }
+        ,{ q: "能做万圣节 2026 主题的僵尸视频吗？", a: "可以。僵尸爱情故事本身就是为万圣节 2026 准备的：灰蒙蒙的末世、举起来却始终没有开火的那把枪，最后一刀切回晴天。情侣、宠物都能拍。" }
       ],
       en: [
         { q: "How do I make the zombie couple video?", a: "Upload a photo of your partner first and one of yourself second, pick a world and generate. Your partner walks out of the fog infected, you lower the gun, they charge at you, and the clip cuts to a sunny day where the same run turns into a laughing hug. A clip takes about four to five minutes." },
@@ -195,6 +197,8 @@
         { q: "Will it look exactly like them?", a: "Close enough to tell who it is, but not pixel-perfect. Clear, front-facing photos keep the likeness best." },
         { q: "What is the AI zombie trend?", a: "A short-video format that went viral at the end of September. In a grey world after an outbreak, someone raises a gun at the person they love most, cannot shoot, and gets pulled into a hug as the clip cuts to a happier day." },
         { q: "Whose photos can I use?", a: "Adults and pets only, and only people who are happy to star in it. Clear, front-facing photos with the face fully visible work best." }
+        ,{ q: "How do I turn a photo into a zombie video?", a: "Upload a clear, front-facing photo and the AI zombie effect does the rest: it keeps the same face, hair and clothes, drains the colour, and turns your photo into a 13-second zombie video in about four to five minutes." }
+        ,{ q: "Can I make a zombie video for Halloween 2026?", a: "Yes. The zombie love story is built for Halloween 2026: a grey post-outbreak world, a gun raised and never fired, and a seamless cut back to a sunny day. Make it with your partner or your pet." }
       ]
     };
 
