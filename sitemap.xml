@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://zombie-couple.xyz/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://zombie-couple.xyz/" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zombie-couple.xyz/zh/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://zombie-couple.xyz/" />
+  </url>
+  <url>
+    <loc>https://zombie-couple.xyz/zh/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zombie-couple.xyz/zh/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://zombie-couple.xyz/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://zombie-couple.xyz/" />
+  </url>
+  <url>
+    <loc>https://zombie-couple.xyz/privacy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://zombie-couple.xyz/privacy.html" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zombie-couple.xyz/zh/privacy.html" />
+  </url>
+  <url>
+    <loc>https://zombie-couple.xyz/zh/privacy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zombie-couple.xyz/zh/privacy.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://zombie-couple.xyz/privacy.html" />
+  </url>
+  <url>
+    <loc>https://zombie-couple.xyz/terms.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://zombie-couple.xyz/terms.html" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zombie-couple.xyz/zh/terms.html" />
+  </url>
+  <url>
+    <loc>https://zombie-couple.xyz/zh/terms.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zombie-couple.xyz/zh/terms.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://zombie-couple.xyz/terms.html" />
+  </url>
+  <url>
+    <loc>https://zombie-couple.xyz/refund.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://zombie-couple.xyz/refund.html" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zombie-couple.xyz/zh/refund.html" />
+  </url>
+  <url>
+    <loc>https://zombie-couple.xyz/zh/refund.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zombie-couple.xyz/zh/refund.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://zombie-couple.xyz/refund.html" />
+  </url>
+  <url>
+    <loc>https://zombie-couple.xyz/contact.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://zombie-couple.xyz/contact.html" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zombie-couple.xyz/zh/contact.html" />
+  </url>
+  <url>
+    <loc>https://zombie-couple.xyz/zh/contact.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://zombie-couple.xyz/zh/contact.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://zombie-couple.xyz/contact.html" />
+  </url>
+</urlset>
