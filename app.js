@@ -212,7 +212,7 @@
       if (!container) return;
       var toast = document.createElement('div');
       var bgClass = type === 'error' ? 'bg-rose-600' : 'bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white';
-      toast.className = 'pointer-events-auto px-4 py-2.5 rounded-xl shadow-xl border border-white/10 text-xs font-semibold flex items-center gap-2 transition-all ' + bgClass;
+      toast.className = 'zc-toast ' + bgClass;
       toast.textContent = message;
       container.appendChild(toast);
       setTimeout(function() {
@@ -418,9 +418,9 @@
         var btn = document.getElementById('world-btn-' + k);
         if (!btn) continue;
         if (k === worldKey) {
-          btn.className = 'world-card group flex flex-col items-start p-2.5 rounded-xl border-2 border-rose-500 bg-rose-500/10 text-left transition-all';
+          btn.className = 'zc-world is-active';
         } else {
-          btn.className = 'world-card group flex flex-col items-start p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-left transition-all';
+          btn.className = 'zc-world';
         }
       }
       updatePromptAndPriceUI();
@@ -434,9 +434,9 @@
         var btn = document.getElementById('res-btn-' + k);
         if (!btn) continue;
         if (k === resKey) {
-          btn.className = 'res-card flex flex-col items-center justify-center py-2 px-2 rounded-xl border-2 border-rose-500 bg-rose-500/10 transition-all relative';
+          btn.className = 'zc-res is-active';
         } else {
-          btn.className = 'res-card flex flex-col items-center justify-center py-2 px-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] transition-all relative';
+          btn.className = 'zc-res';
         }
       }
       updatePromptAndPriceUI();
@@ -505,11 +505,11 @@
           var stepEl = document.getElementById('step-ind-' + s);
           if (!stepEl) continue;
           if (s === activeStep) {
-            stepEl.className = 'p-2 rounded-lg bg-rose-500/15 text-rose-400 font-semibold border border-rose-500/30';
+            stepEl.className = 'zc-advice zc-advice--warn';
           } else if (s < activeStep) {
-            stepEl.className = 'p-2 rounded-lg bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30';
+            stepEl.className = 'zc-advice zc-advice--ok';
           } else {
-            stepEl.className = 'p-2 rounded-lg bg-[var(--color-surface-hover)] text-[var(--color-text-muted)]';
+            stepEl.className = 'zc-advice';
           }
         }
 
@@ -901,7 +901,7 @@
       if (!stage || !stage.parentNode) return null;
       el = document.createElement('video');
       el.id = 'cinema-real-video';
-      el.className = 'absolute inset-0 z-20 w-full h-full object-cover bg-black hidden';
+      el.className = 'zc-player-video hidden';
       el.setAttribute('controls', '');
       el.setAttribute('playsinline', '');
       el.setAttribute('preload', 'metadata');
@@ -1003,28 +1003,28 @@
       // Update Shot Pill, Caption & Visual Filters
       if (shotIndex === 1) {
         shotPill.textContent = t('shot1Pill');
-        shotPill.className = 'px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-xs font-bold text-zinc-200';
+        shotPill.className = 'zc-badge zc-badge--onmedia';
         caption.textContent = t('shot1Caption');
         fogOverlay.style.opacity = '0.65';
         warmOverlay.style.opacity = '0';
         mainImg.style.filter = 'grayscale(45%) contrast(1.08)';
       } else if (shotIndex === 2) {
         shotPill.textContent = t('shot2Pill');
-        shotPill.className = 'px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-xs font-bold text-rose-400';
+        shotPill.className = 'zc-badge zc-badge--onmedia';
         caption.textContent = t('shot2Caption');
         fogOverlay.style.opacity = '0.55';
         warmOverlay.style.opacity = '0';
         mainImg.style.filter = 'grayscale(35%) contrast(1.05)';
       } else if (shotIndex === 3) {
         shotPill.textContent = t('shot3Pill');
-        shotPill.className = 'px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-xs font-bold text-amber-400';
+        shotPill.className = 'zc-badge zc-badge--onmedia';
         caption.textContent = t('shot3Caption');
         fogOverlay.style.opacity = '0.4';
         warmOverlay.style.opacity = '0.15';
         mainImg.style.filter = 'grayscale(20%)';
       } else {
         shotPill.textContent = t('shot4Pill');
-        shotPill.className = 'px-2.5 py-1 rounded-full bg-amber-500/90 backdrop-blur-md border border-white/30 text-xs font-bold text-black';
+        shotPill.className = 'zc-badge zc-badge--onmedia zc-usecase__time--amber';
         caption.textContent = t('shot4Caption');
         fogOverlay.style.opacity = '0';
         warmOverlay.style.opacity = '0.85';
@@ -1035,9 +1035,9 @@
         var btn = document.getElementById('modal-shot-btn-' + i);
         if (!btn) continue;
         if (i === shotIndex) {
-          btn.className = 'w-full text-left p-2.5 rounded-xl border border-rose-500 bg-rose-500/15 transition-all';
+          btn.className = 'zc-advice zc-advice--warn';
         } else {
-          btn.className = 'w-full text-left p-2.5 rounded-xl border border-zinc-800 bg-zinc-900/70 hover:bg-zinc-800 transition-all';
+          btn.className = 'zc-advice';
         }
       }
     }
@@ -1054,13 +1054,13 @@
       if (tabName === 'works') {
         panelTut.classList.add('hidden');
         panelWorks.classList.remove('hidden');
-        btnWorks.className = 'relative inline-flex items-center gap-1.5 px-3 pb-2.5 pt-1 text-sm font-semibold transition-colors text-[var(--color-text)] border-b-2 border-rose-500';
-        btnTut.className = 'relative inline-flex items-center gap-1.5 px-3 pb-2.5 pt-1 text-sm font-semibold transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)]';
+        btnWorks.className = 'zc-tab is-active';
+        btnTut.className = 'zc-tab';
       } else {
         panelWorks.classList.add('hidden');
         panelTut.classList.remove('hidden');
-        btnTut.className = 'relative inline-flex items-center gap-1.5 px-3 pb-2.5 pt-1 text-sm font-semibold transition-colors text-[var(--color-text)] border-b-2 border-rose-500';
-        btnWorks.className = 'relative inline-flex items-center gap-1.5 px-3 pb-2.5 pt-1 text-sm font-semibold transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)]';
+        btnTut.className = 'zc-tab is-active';
+        btnWorks.className = 'zc-tab';
       }
     }
 

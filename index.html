@@ -33,7 +33,7 @@
   <meta name="description" content="Upload two photos and turn them into the viral AI zombie love story: the person you love most is infected, you raise the gun but cannot pull the trigger, and the moment they charge at you becomes a warm embrace. Works with pets too." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="tailwind.css" />
   <link id="zombie-couple-stylesheet" rel="stylesheet" href="style.css" />
@@ -66,12 +66,12 @@
 
     <!-- Center: Quick Section Links (Desktop) -->
     <nav class="hidden lg:flex items-center gap-1">
-      <button type="button" onclick="scrollToSection('sec-what-is')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors" data-i18n="navWhatIs">What Is</button>
-      <button type="button" onclick="scrollToSection('sec-key-features')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors" data-i18n="navFeatures">Key Features</button>
-      <button type="button" onclick="scrollToSection('sec-howto')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors" data-i18n="navHowto">How To</button>
-      <button type="button" onclick="scrollToSection('sec-why-choose')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors" data-i18n="navWhyChoose">Why Choose</button>
-      <button type="button" onclick="scrollToSection('sec-faq')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors" data-i18n="navFaq">FAQs</button>
-      <button type="button" onclick="openApiModal()" class="px-3 py-1.5 rounded-lg text-xs font-medium text-rose-400 hover:bg-rose-500/10 transition-colors flex items-center gap-1">
+      <button type="button" onclick="scrollToSection('sec-what-is')" class="zc-chip" data-i18n="navWhatIs">What Is</button>
+      <button type="button" onclick="scrollToSection('sec-key-features')" class="zc-chip" data-i18n="navFeatures">Key Features</button>
+      <button type="button" onclick="scrollToSection('sec-howto')" class="zc-chip" data-i18n="navHowto">How To</button>
+      <button type="button" onclick="scrollToSection('sec-why-choose')" class="zc-chip" data-i18n="navWhyChoose">Why Choose</button>
+      <button type="button" onclick="scrollToSection('sec-faq')" class="zc-chip" data-i18n="navFaq">FAQs</button>
+      <button type="button" onclick="openApiModal()" class="zc-chip zc-chip--accent">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
         <span data-i18n="navApi">Prompt & API</span>
       </button>
@@ -80,13 +80,13 @@
     <!-- Right: Credits, Top-up, Language, Theme -->
     <div class="flex items-center gap-2 shrink-0">
       <!-- Credits Badge & Top Up -->
-      <div class="flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-0.5 pl-2.5 shadow-sm">
+      <div class="zc-creditbar">
         <span class="flex items-center gap-1 text-xs font-semibold text-[var(--color-text)]">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           <span id="credit-balance-display">1,200</span>
           <span class="text-[11px] font-normal text-[var(--color-text-muted)] hidden sm:inline" data-i18n="creditsUnit">Credits</span>
         </span>
-        <button type="button" onclick="openTopupModal()" class="ml-2 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500 hover:bg-rose-600 text-white transition-colors" data-i18n="topUpBtn">+ Top Up</button>
+        <button type="button" onclick="openTopupModal()" class="zc-chip zc-chip--primary" data-i18n="topUpBtn">+ Top Up</button>
       </div>
 
       <!-- Prompt / Deploy Inspector Button (Mobile/Tablet visible too) -->
@@ -112,7 +112,7 @@
   <main class="flex-1 flex flex-col md:flex-row gap-3 p-2 sm:p-3 max-w-[1600px] w-full mx-auto md:h-[calc(100vh-3.5rem)] md:overflow-hidden">
 
     <!-- LEFT PANEL: Generator Controls (400px on Desktop) -->
-    <aside class="w-full md:w-[400px] lg:w-[420px] shrink-0 flex flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] md:h-full md:overflow-hidden shadow-sm">
+    <aside class="zc-panel w-full md:w-[400px] lg:w-[420px] shrink-0 flex flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] md:h-full md:overflow-hidden shadow-sm">
       
       <!-- Top Breadcrumb & Mini Recipe Card -->
       <div class="shrink-0 px-4 pt-3.5 pb-2.5 border-b border-[var(--color-border-subtle)] space-y-2.5">
@@ -127,7 +127,7 @@
         </nav>
 
         <!-- Recipe Hero Summary Card -->
-        <div class="flex items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-2">
+        <div class="zc-card zc-card--row">
           <button type="button" onclick="openPreviewModal(0)" class="group relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-zinc-900 border border-[var(--color-border)]">
             <img src="assets/scene-ruined-city.jpg" alt="Zombie Love Story" class="h-full w-full object-cover group-hover:scale-105 transition-transform" />
             <span class="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -137,7 +137,7 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <p class="truncate text-sm font-bold text-[var(--color-text)]">Zombie Love Story</p>
-              <span class="inline-flex items-center gap-0.5 rounded-full bg-orange-500/15 text-orange-400 px-1.5 py-0.5 text-[10px] font-semibold">
+              <span class="zc-badge zc-badge--ember">
                 🔥 HOT
               </span>
             </div>
@@ -153,21 +153,21 @@
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="text-xs font-bold uppercase tracking-wider text-[var(--color-text)] flex items-center gap-1.5">
-              <span class="w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] inline-flex items-center justify-center font-bold">1</span>
+              <span class="zc-step">1</span>
               <span data-i18n="uploadSectionTitle">Upload Two Photos (Order Matters)</span>
             </label>
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-[11px] font-medium text-[var(--color-text-muted)]" data-i18n="trySamplesLabel">Try samples:</span>
-              <button type="button" onclick="applyExamplePreset(0)" title="Couple · Ruined city" aria-label="Couple sample" class="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-rose-800 ring-2 ring-rose-500/30 text-white text-sm flex items-center justify-center hover:scale-110 transition-transform">👩</button>
-              <button type="button" onclick="applyExamplePreset(1)" title="Pet dog · Snowy town" aria-label="Pet sample" class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-800 ring-2 ring-amber-500/30 text-white text-sm flex items-center justify-center hover:scale-110 transition-transform">🐕</button>
-              <button type="button" onclick="applyExamplePreset(2)" title="Hug · Empty highway" aria-label="Hug sample" class="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-sky-800 ring-2 ring-sky-500/30 text-white text-sm flex items-center justify-center hover:scale-110 transition-transform">🫂</button>
+              <button type="button" onclick="applyExamplePreset(0)" title="Couple · Ruined city" aria-label="Couple sample" class="zc-sample">👩</button>
+              <button type="button" onclick="applyExamplePreset(1)" title="Pet dog · Snowy town" aria-label="Pet sample" class="zc-sample zc-sample--pet">🐕</button>
+              <button type="button" onclick="applyExamplePreset(2)" title="Hug · Empty highway" aria-label="Hug sample" class="zc-sample zc-sample--hug">🫂</button>
             </div>
           </div>
 
           <!-- Two Upload Slots Grid -->
           <div class="grid grid-cols-2 gap-2.5 relative">
             <!-- Slot 1: @Image1 (The one who turns) -->
-            <div class="flex flex-col rounded-xl border-2 border-dashed border-[var(--color-border)] hover:border-rose-500/60 bg-[var(--color-surface)] p-2.5 transition-all relative group">
+            <div class="zc-slot zc-slot--infect group">
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-400">@Image1 · Photo 1</span>
                 <button type="button" id="clear-slot-1" onclick="clearPhotoSlot(1)" class="hidden text-[10px] text-[var(--color-text-muted)] hover:text-rose-400">Clear</button>
@@ -175,7 +175,7 @@
               <p class="text-xs font-semibold text-[var(--color-text)] truncate" data-i18n="slot1Title">The one who turns</p>
               <p class="text-[11px] text-[var(--color-text-muted)] leading-tight mt-0.5 mb-2" data-i18n="slot1Desc">Your partner, friend, parent or pet, face clearly visible</p>
 
-              <label for="file-input-1" class="mt-auto cursor-pointer flex flex-col items-center justify-center h-28 rounded-lg bg-[var(--color-surface-hover)] overflow-hidden relative border border-[var(--color-border-subtle)]">
+              <label for="file-input-1" class="zc-slot__drop">
                 <div id="slot-1-empty" class="flex flex-col items-center justify-center p-2 text-center">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[var(--color-text-muted)] mb-1 group-hover:text-rose-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
                   <span class="text-[11px] font-medium text-[var(--color-text-muted)]" data-i18n="clickToUpload">Click to upload</span>
@@ -187,12 +187,12 @@
             </div>
 
             <!-- Swap Roles Button (Centered Between Slots) -->
-            <button type="button" onclick="swapPhotoSlots()" title="Swap photo 1 and photo 2 roles" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-elevated)] hover:bg-rose-500 hover:text-white hover:border-rose-500 text-[var(--color-text)] shadow-md flex items-center justify-center transition-all">
+            <button type="button" onclick="swapPhotoSlots()" title="Swap photo 1 and photo 2 roles" class="swap-roles-btn">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
             </button>
 
             <!-- Slot 2: @Image2 (You, the survivor) -->
-            <div class="flex flex-col rounded-xl border-2 border-dashed border-[var(--color-border)] hover:border-emerald-500/60 bg-[var(--color-surface)] p-2.5 transition-all relative group">
+            <div class="zc-slot zc-slot--survivor group">
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">@Image2 · Photo 2</span>
                 <button type="button" id="clear-slot-2" onclick="clearPhotoSlot(2)" class="hidden text-[10px] text-[var(--color-text-muted)] hover:text-rose-400">Clear</button>
@@ -200,7 +200,7 @@
               <p class="text-xs font-semibold text-[var(--color-text)] truncate" data-i18n="slot2Title">You, the survivor</p>
               <p class="text-[11px] text-[var(--color-text-muted)] leading-tight mt-0.5 mb-2" data-i18n="slot2Desc">A clear photo of yourself. You are the one holding the gun</p>
 
-              <label for="file-input-2" class="mt-auto cursor-pointer flex flex-col items-center justify-center h-28 rounded-lg bg-[var(--color-surface-hover)] overflow-hidden relative border border-[var(--color-border-subtle)]">
+              <label for="file-input-2" class="zc-slot__drop">
                 <div id="slot-2-empty" class="flex flex-col items-center justify-center p-2 text-center">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[var(--color-text-muted)] mb-1 group-hover:text-emerald-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
                   <span class="text-[11px] font-medium text-[var(--color-text-muted)]" data-i18n="clickToUpload">Click to upload</span>
@@ -221,7 +221,7 @@
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="text-xs font-bold uppercase tracking-wider text-[var(--color-text)] flex items-center gap-1.5">
-              <span class="w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] inline-flex items-center justify-center font-bold">2</span>
+              <span class="zc-step">2</span>
               <span data-i18n="worldSectionTitle">Pick a World (Setting)</span>
             </label>
             <span id="selected-world-label" class="text-[11px] font-medium text-rose-400">Ruined city</span>
@@ -229,21 +229,21 @@
 
           <div class="grid grid-cols-3 gap-2">
             <!-- Option 1: Ruined city -->
-            <button type="button" id="world-btn-city" onclick="selectWorld('city')" class="world-card group flex flex-col items-start p-2.5 rounded-xl border-2 border-rose-500 bg-rose-500/10 text-left transition-all">
+            <button type="button" id="world-btn-city" onclick="selectWorld('city')" class="zc-world is-active">
               <span class="text-base mb-1">🏙️</span>
               <span class="text-xs font-bold text-[var(--color-text)]" data-i18n="worldCityTitle">Ruined city</span>
               <span class="text-[10px] text-[var(--color-text-muted)] line-clamp-1 mt-0.5" data-i18n="worldCitySub">Abandoned foggy street</span>
             </button>
 
             <!-- Option 2: Snowy town -->
-            <button type="button" id="world-btn-snow" onclick="selectWorld('snow')" class="world-card group flex flex-col items-start p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-left transition-all">
+            <button type="button" id="world-btn-snow" onclick="selectWorld('snow')" class="zc-world">
               <span class="text-base mb-1">🏔️</span>
               <span class="text-xs font-bold text-[var(--color-text)]" data-i18n="worldSnowTitle">Snowy town</span>
               <span class="text-[10px] text-[var(--color-text-muted)] line-clamp-1 mt-0.5" data-i18n="worldSnowSub">Snowy mountain town</span>
             </button>
 
             <!-- Option 3: Empty highway -->
-            <button type="button" id="world-btn-highway" onclick="selectWorld('highway')" class="world-card group flex flex-col items-start p-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-left transition-all">
+            <button type="button" id="world-btn-highway" onclick="selectWorld('highway')" class="zc-world">
               <span class="text-base mb-1">🛣️</span>
               <span class="text-xs font-bold text-[var(--color-text)]" data-i18n="worldHighwayTitle">Empty highway</span>
               <span class="text-[10px] text-[var(--color-text-muted)] line-clamp-1 mt-0.5" data-i18n="worldHighwaySub">Highway with old cars</span>
@@ -255,27 +255,27 @@
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="text-xs font-bold uppercase tracking-wider text-[var(--color-text)] flex items-center gap-1.5">
-              <span class="w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] inline-flex items-center justify-center font-bold">3</span>
+              <span class="zc-step">3</span>
               <span data-i18n="resSectionTitle">Resolution & Specs</span>
             </label>
             <span class="text-[11px] text-[var(--color-text-muted)]">13s · 9:16 · Native stereo audio</span>
           </div>
 
           <div class="grid grid-cols-3 gap-2">
-            <button type="button" id="res-btn-480p" onclick="selectResolution('480p')" class="res-card flex flex-col items-center justify-center py-2 px-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] transition-all">
+            <button type="button" id="res-btn-480p" onclick="selectResolution('480p')" class="zc-res">
               <span class="text-xs font-bold text-[var(--color-text)]">480p</span>
-              <span class="text-[10px] text-[var(--color-text-muted)] mt-0.5">⚡ 310 · $0.78</span>
+              <span class="zc-res__price mt-0.5">⚡ 310 · $0.78</span>
             </button>
 
-            <button type="button" id="res-btn-720p" onclick="selectResolution('720p')" class="res-card flex flex-col items-center justify-center py-2 px-2 rounded-xl border-2 border-rose-500 bg-rose-500/10 transition-all relative">
-              <span class="absolute -top-2 right-1.5 bg-rose-500 text-white text-[9px] font-bold px-1.5 rounded-full" data-i18n="defaultBadge">Default</span>
+            <button type="button" id="res-btn-720p" onclick="selectResolution('720p')" class="zc-res is-active">
+              <span class="zc-badge zc-badge--solid zc-res__flag" data-i18n="defaultBadge">Default</span>
               <span class="text-xs font-bold text-[var(--color-text)]">720p</span>
-              <span class="text-[10px] text-rose-400 font-medium mt-0.5">⚡ 645 · $1.61</span>
+              <span class="zc-res__price mt-0.5">⚡ 645 · $1.61</span>
             </button>
 
-            <button type="button" id="res-btn-1080p" onclick="selectResolution('1080p')" class="res-card flex flex-col items-center justify-center py-2 px-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] transition-all">
+            <button type="button" id="res-btn-1080p" onclick="selectResolution('1080p')" class="zc-res">
               <span class="text-xs font-bold text-[var(--color-text)]">1080p</span>
-              <span class="text-[10px] text-[var(--color-text-muted)] mt-0.5">⚡ 2,000 · $5.00</span>
+              <span class="zc-res__price mt-0.5">⚡ 2,000 · $5.00</span>
             </button>
           </div>
         </div>
@@ -292,14 +292,14 @@
               <span data-i18n="copyPromptBtn">Copy</span>
             </button>
           </div>
-          <pre id="live-prompt-box" class="mt-2 max-h-24 overflow-y-auto text-[10px] leading-relaxed font-mono text-[var(--color-text-muted)] whitespace-pre-wrap select-all bg-[var(--color-bg)] p-2 rounded-lg border border-[var(--color-border-subtle)]"></pre>
+          <pre id="live-prompt-box" class="zc-promptbox"></pre>
         </div>
 
       </div>
 
       <!-- Sticky Bottom Generate Button Area -->
       <div class="shrink-0 p-4 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] space-y-2">
-        <button type="button" id="generate-main-btn" onclick="startZombieGeneration()" class="btn-generate-video w-full py-3 px-4 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-sm shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 transition-all active:scale-[0.99]">
+        <button type="button" id="generate-main-btn" onclick="startZombieGeneration()" class="btn-generate-video">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
           <span id="generate-btn-text">Generate Video · 645 Credits</span>
         </button>
@@ -311,16 +311,16 @@
     </aside>
 
     <!-- RIGHT PANEL: Output Works & SEO Tutorial -->
-    <section class="flex-1 min-w-0 flex flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] md:h-full md:overflow-hidden shadow-sm">
+    <section class="zc-panel flex-1 min-w-0 flex flex-col md:h-full md:overflow-hidden">
       
       <!-- Top Tabs: Works | Tutorial -->
       <div class="shrink-0 px-4 pt-3 border-b border-[var(--color-border)] flex items-center justify-between">
         <div role="tablist" class="flex items-center gap-2">
-          <button type="button" role="tab" id="tab-btn-works" onclick="switchRightTab('works')" class="relative inline-flex items-center gap-1.5 px-3 pb-2.5 pt-1 text-sm font-semibold transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+          <button type="button" role="tab" id="tab-btn-works" onclick="switchRightTab('works')" class="zc-tab">
             <span data-i18n="tabWorks">My Works</span>
-            <span id="works-count-badge" class="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500/20 text-rose-400 font-bold">1</span>
+            <span id="works-count-badge" class="zc-badge zc-badge--infect">1</span>
           </button>
-          <button type="button" role="tab" id="tab-btn-tutorial" onclick="switchRightTab('tutorial')" class="relative inline-flex items-center gap-1.5 px-3 pb-2.5 pt-1 text-sm font-semibold transition-colors text-[var(--color-text)] border-b-2 border-rose-500">
+          <button type="button" role="tab" id="tab-btn-tutorial" onclick="switchRightTab('tutorial')" class="zc-tab is-active">
             <span data-i18n="tabTutorial">Tutorial & Examples</span>
           </button>
         </div>
@@ -340,24 +340,24 @@
         <div id="panel-tutorial" class="max-w-4xl mx-auto px-4 sm:px-8 py-6 space-y-11">
           
           <!-- Hero Header: the generator itself -->
-          <header id="sec-generator" class="space-y-3">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-400 text-xs font-semibold">
+          <header id="sec-generator" class="zc-hero zc-reveal space-y-3">
+            <div class="zc-badge zc-badge--infect zc-flicker">
               <span>🧟‍♂️❤️🧟‍♀️</span>
               <span data-i18n="heroBadge">AI Video Generator · zombie-couple.xyz</span>
             </div>
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight text-[var(--color-text)]" data-i18n="heroH1">AI Zombie Couple Video Generator</h1>
             <p class="max-w-2xl text-sm sm:text-base leading-relaxed text-[var(--color-text-muted)]" data-i18n="heroTagline">Turn two photos into a 13-second zombie love story: the person you love walks out of the fog infected, you cannot pull the trigger, and their charge ends in a hug. Works with pets too.</p>
             <div class="flex flex-wrap gap-2 pt-1">
-              <button type="button" onclick="startZombieGeneration()" class="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold transition-colors">⚡ Generate My Video</button>
-              <button type="button" onclick="fillSamplePhotos()" class="px-4 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-sm font-semibold transition-colors">🖼️ Use Sample Photos</button>
-              <button type="button" onclick="openPreviewModal(0)" class="px-4 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-sm font-semibold transition-colors">▶ Watch a 13s Example</button>
+              <button type="button" onclick="startZombieGeneration()" class="zc-chip zc-chip--primary">⚡ Generate My Video</button>
+              <button type="button" onclick="fillSamplePhotos()" class="zc-chip">🖼️ Use Sample Photos</button>
+              <button type="button" onclick="openPreviewModal(0)" class="zc-chip">▶ Watch a 13s Example</button>
             </div>
             <nav aria-label="On this page" class="flex flex-wrap gap-2 pt-2">
-              <button type="button" onclick="scrollToSection('sec-what-is')" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-xs font-semibold transition-colors">What Is</button>
-              <button type="button" onclick="scrollToSection('sec-key-features')" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-xs font-semibold transition-colors">Key Features</button>
-              <button type="button" onclick="scrollToSection('sec-howto')" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-xs font-semibold transition-colors">How To</button>
-              <button type="button" onclick="scrollToSection('sec-why-choose')" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-xs font-semibold transition-colors">Why Choose</button>
-              <button type="button" onclick="scrollToSection('sec-faq')" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-xs font-semibold transition-colors">FAQ</button>
+              <button type="button" onclick="scrollToSection('sec-what-is')" class="zc-chip">What Is</button>
+              <button type="button" onclick="scrollToSection('sec-key-features')" class="zc-chip">Key Features</button>
+              <button type="button" onclick="scrollToSection('sec-howto')" class="zc-chip">How To</button>
+              <button type="button" onclick="scrollToSection('sec-why-choose')" class="zc-chip">Why Choose</button>
+              <button type="button" onclick="scrollToSection('sec-faq')" class="zc-chip">FAQ</button>
             </nav>
           </header>
 
@@ -369,76 +369,76 @@
                 <h3 class="text-base font-bold" data-i18n="whatIsH3">Three ways people use it</h3>
                 <span class="text-xs text-[var(--color-text-muted)]">Click any card to preview the 13s clip and audio · Vertical 9:16 · Heartbeat to piano score</span>
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3">
+              <div class="zc-usecases zc-stagger mt-3">
               <!-- Example 1: Ruined City Couple -->
-              <div class="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:border-rose-500/60 transition-all">
-                <button type="button" onclick="openPreviewModal(0)" class="relative w-full aspect-[9/16] overflow-hidden bg-zinc-900 text-left">
-                  <img src="assets/scene-ruined-city.jpg" alt="Zombie couple reunion in a ruined city" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent"></div>
-                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/65 backdrop-blur-md text-white text-[11px] font-semibold flex items-center gap-1">
+              <div class="zc-usecase group">
+                <button type="button" onclick="openPreviewModal(0)" class="zc-usecase__media">
+                  <img src="assets/scene-ruined-city.jpg" alt="Zombie couple reunion in a ruined city" class="zc-usecase__img" />
+                  <div class="zc-usecase__scrim"></div>
+                  <span class="zc-badge zc-badge--onmedia zc-usecase__tag">
                     🏙️ <span data-i18n="ex1SceneTag">Ruined City · Couple</span>
                   </span>
-                  <span class="absolute top-3 right-3 px-2 py-0.5 rounded bg-rose-500 text-white text-[10px] font-bold">00:13</span>
-                  <div class="absolute inset-0 flex items-center justify-center opacity-90 group-hover:scale-110 transition-transform">
-                    <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center text-white shadow-lg">
+                  <span class="zc-badge zc-badge--solid zc-usecase__time">00:13</span>
+                  <div class="zc-usecase__play">
+                    <div class="zc-usecase__playbtn">
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                     </div>
                   </div>
-                  <div class="absolute bottom-3 inset-x-3 text-white">
-                    <p class="text-sm font-bold" data-i18n="ex1Title">Fog Standoff → Sunny Hug</p>
-                    <p class="text-[11px] text-zinc-300 mt-0.5 line-clamp-2" data-i18n="ex1Desc">Your partner walks out of the ruined street fog, you drop the gun, and their charge cuts to a sunny laughing embrace.</p>
+                  <div class="zc-usecase__meta">
+                    <p class="zc-usecase__title" data-i18n="ex1Title">Fog Standoff → Sunny Hug</p>
+                    <p class="zc-usecase__desc" data-i18n="ex1Desc">Your partner walks out of the ruined street fog, you drop the gun, and their charge cuts to a sunny laughing embrace.</p>
                   </div>
                 </button>
                 <div class="p-2.5 bg-[var(--color-surface)] flex items-center justify-between gap-2">
-                  <button type="button" onclick="applyExamplePreset(0)" class="w-full py-1.5 px-3 rounded-lg bg-[var(--color-surface-hover)] hover:bg-rose-500 hover:text-white text-xs font-semibold transition-colors" data-i18n="usePresetBtn">Apply Scene & Sample Photos</button>
+                  <button type="button" onclick="applyExamplePreset(0)" class="zc-chip" data-i18n="usePresetBtn">Apply Scene & Sample Photos</button>
                 </div>
               </div>
 
               <!-- Example 2: Snowy Town Pet -->
-              <div class="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:border-rose-500/60 transition-all">
-                <button type="button" onclick="openPreviewModal(1)" class="relative w-full aspect-[9/16] overflow-hidden bg-zinc-900 text-left">
-                  <img src="assets/scene-snow-town.jpg" alt="Pet reunion in a snowy town" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent"></div>
-                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/65 backdrop-blur-md text-white text-[11px] font-semibold flex items-center gap-1">
+              <div class="zc-usecase group">
+                <button type="button" onclick="openPreviewModal(1)" class="zc-usecase__media">
+                  <img src="assets/scene-snow-town.jpg" alt="Pet reunion in a snowy town" class="zc-usecase__img" />
+                  <div class="zc-usecase__scrim"></div>
+                  <span class="zc-badge zc-badge--onmedia zc-usecase__tag">
                     🐾 <span data-i18n="ex2SceneTag">Snowy Town · Pet Dog</span>
                   </span>
-                  <span class="absolute top-3 right-3 px-2 py-0.5 rounded bg-amber-500 text-white text-[10px] font-bold">00:13</span>
-                  <div class="absolute inset-0 flex items-center justify-center opacity-90 group-hover:scale-110 transition-transform">
-                    <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center text-white shadow-lg">
+                  <span class="zc-badge zc-badge--onmedia zc-usecase__time zc-usecase__time--amber">00:13</span>
+                  <div class="zc-usecase__play">
+                    <div class="zc-usecase__playbtn">
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                     </div>
                   </div>
-                  <div class="absolute bottom-3 inset-x-3 text-white">
-                    <p class="text-sm font-bold" data-i18n="ex2Title">Loyal Pet Charging Through Fog</p>
-                    <p class="text-[11px] text-zinc-300 mt-0.5 line-clamp-2" data-i18n="ex2Desc">Your dog emerges from the snowy mist and races into your open arms, cutting to a sunny tumble.</p>
+                  <div class="zc-usecase__meta">
+                    <p class="zc-usecase__title" data-i18n="ex2Title">Loyal Pet Charging Through Fog</p>
+                    <p class="zc-usecase__desc" data-i18n="ex2Desc">Your dog emerges from the snowy mist and races into your open arms, cutting to a sunny tumble.</p>
                   </div>
                 </button>
                 <div class="p-2.5 bg-[var(--color-surface)] flex items-center justify-between gap-2">
-                  <button type="button" onclick="applyExamplePreset(1)" class="w-full py-1.5 px-3 rounded-lg bg-[var(--color-surface-hover)] hover:bg-rose-500 hover:text-white text-xs font-semibold transition-colors" data-i18n="usePresetBtn">Apply Scene & Sample Photos</button>
+                  <button type="button" onclick="applyExamplePreset(1)" class="zc-chip" data-i18n="usePresetBtn">Apply Scene & Sample Photos</button>
                 </div>
               </div>
 
               <!-- Example 3: Empty Highway Couple -->
-              <div class="group relative flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm hover:border-rose-500/60 transition-all">
-                <button type="button" onclick="openPreviewModal(2)" class="relative w-full aspect-[9/16] overflow-hidden bg-zinc-900 text-left">
-                  <img src="assets/scene-highway.jpg" alt="Sunset reunion on an empty highway" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent"></div>
-                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/65 backdrop-blur-md text-white text-[11px] font-semibold flex items-center gap-1">
+              <div class="zc-usecase group">
+                <button type="button" onclick="openPreviewModal(2)" class="zc-usecase__media">
+                  <img src="assets/scene-highway.jpg" alt="Sunset reunion on an empty highway" class="zc-usecase__img" />
+                  <div class="zc-usecase__scrim"></div>
+                  <span class="zc-badge zc-badge--onmedia zc-usecase__tag">
                     🛣️ <span data-i18n="ex3SceneTag">Empty Highway · Sunset</span>
                   </span>
-                  <span class="absolute top-3 right-3 px-2 py-0.5 rounded bg-rose-500 text-white text-[10px] font-bold">00:13</span>
-                  <div class="absolute inset-0 flex items-center justify-center opacity-90 group-hover:scale-110 transition-transform">
-                    <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center text-white shadow-lg">
+                  <span class="zc-badge zc-badge--solid zc-usecase__time">00:13</span>
+                  <div class="zc-usecase__play">
+                    <div class="zc-usecase__playbtn">
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                     </div>
                   </div>
-                  <div class="absolute bottom-3 inset-x-3 text-white">
-                    <p class="text-sm font-bold" data-i18n="ex3Title">Abandoned Highway → Golden Hour</p>
-                    <p class="text-[11px] text-zinc-300 mt-0.5 line-clamp-2" data-i18n="ex3Desc">Among abandoned cars on a misty highway, open your arms for a tackle that cuts to golden sunlight.</p>
+                  <div class="zc-usecase__meta">
+                    <p class="zc-usecase__title" data-i18n="ex3Title">Abandoned Highway → Golden Hour</p>
+                    <p class="zc-usecase__desc" data-i18n="ex3Desc">Among abandoned cars on a misty highway, open your arms for a tackle that cuts to golden sunlight.</p>
                   </div>
                 </button>
                 <div class="p-2.5 bg-[var(--color-surface)] flex items-center justify-between gap-2">
-                  <button type="button" onclick="applyExamplePreset(2)" class="w-full py-1.5 px-3 rounded-lg bg-[var(--color-surface-hover)] hover:bg-rose-500 hover:text-white text-xs font-semibold transition-colors" data-i18n="usePresetBtn">Apply Scene & Sample Photos</button>
+                  <button type="button" onclick="applyExamplePreset(2)" class="zc-chip" data-i18n="usePresetBtn">Apply Scene & Sample Photos</button>
                 </div>
               </div>
             </div>
@@ -891,7 +891,7 @@
             <button type="button" onclick="downloadCssFile()" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-colors">
               Download style.css
             </button>
-            <button type="button" onclick="downloadStoryboardJson()" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] text-xs font-semibold transition-colors">
+            <button type="button" onclick="downloadStoryboardJson()" class="zc-chip">
               Download storyboard config (.json)
             </button>
           </div>
