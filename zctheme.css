@@ -776,3 +776,25 @@ section[id^="sec-"] > h2 {
   color: var(--zc-infect);
 }
 .zc-pack--recommended .zc-pack__hint { display: block; }
+
+
+/* 积分包：三档分辨率可兑换条数清单 */
+.zc-pack__tiers {
+  margin-top: 0.55rem;
+  padding-top: 0.45rem;
+  border-top: 1px dashed var(--color-border-subtle);
+  display: grid;
+  gap: 0.2rem;
+}
+.zc-pack__tier {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.zc-pack__tier--none { opacity: 0.45; }

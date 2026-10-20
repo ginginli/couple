@@ -13,11 +13,11 @@ const store = require('./store');
 const PACKS = {
   starter: { credits: 2000, usd: 9.9, label: 'Starter Pack' },
   popular: { credits: 6000, usd: 26.9, label: 'Couple Viral Pack' },
-  pro: { credits: 13000, usd: 54.9, label: 'Creator Pro Pack' }
+  pro: { credits: 20000, usd: 99.0, label: 'Creator Pro Pack' }
 };
 
 // 服务端定价：前端传什么都不算，以这里为准（防改价）
-const TIER_CREDITS = { '480p': 350, '720p': 600, '1080p': 1050 };
+const TIER_CREDITS = { '480p': 350, '720p': 600, '1080p': 2100 };
 
 function creditsForResolution(res) {
   return TIER_CREDITS[res] || TIER_CREDITS['720p'];
