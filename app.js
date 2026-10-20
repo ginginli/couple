@@ -237,8 +237,8 @@
       var genBtnText = document.getElementById('generate-btn-text');
       if (genBtnText) {
         genBtnText.textContent = appState.lang === 'zh'
-          ? ('立即生成视频 · ' + cost.toLocaleString() + ' 积分')
-          : ('Generate Video · ' + cost.toLocaleString() + ' credits');
+          ? ('立即生成视频 · ' + cost.toLocaleString() + ' 积分（≈ ' + creditsToUsd(cost) + '）')
+          : ('Generate Video · ' + cost.toLocaleString() + ' credits (≈ ' + creditsToUsd(cost) + ')');
       }
       var worldLabel = document.getElementById('selected-world-label');
       if (worldLabel) {
