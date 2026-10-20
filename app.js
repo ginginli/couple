@@ -237,8 +237,8 @@
       var genBtnText = document.getElementById('generate-btn-text');
       if (genBtnText) {
         genBtnText.textContent = appState.lang === 'zh'
-          ? ('立即生成视频 · ' + cost.toLocaleString() + ' 积分（≈ ' + creditsToUsd(cost) + '）')
-          : ('Generate Video · ' + cost.toLocaleString() + ' Credits (≈ ' + creditsToUsd(cost) + ')');
+          ? ('立即生成视频 · ' + cost.toLocaleString() + ' 积分')
+          : ('Generate Video · ' + cost.toLocaleString() + ' credits');
       }
       var worldLabel = document.getElementById('selected-world-label');
       if (worldLabel) {
@@ -463,8 +463,8 @@
 
       var cost = TIER_PRICES[appState.resolution];
       if (appState.credits < cost) {
-        openTopupModal();
-        showToast(appState.lang === 'zh' ? ('积分不足（需 ' + cost + ' 积分），请先充值') : 'Insufficient credits, please top up first', 'error');
+        openTopupModal(cost - appState.credits);
+        showToast(appState.lang === 'zh' ? ('积分不足（还差 ' + (cost - appState.credits) + ' 积分），请选择一个积分包') : ('Insufficient credits, need ' + (cost - appState.credits) + ' more — pick a credit pack'), 'error');
         return;
       }
 
@@ -1103,15 +1103,51 @@
       }
     }
 
-    function openTopupModal() {
+    function openTopupModal(neededCredits) {
       document.getElementById('topup-modal').classList.remove('hidden');
+      highlightCreditPack(neededCredits);
+    }
+
+    // 购买单位是积分包：余额不足时高亮“够用的最小包”
+    function highlightCreditPack(neededCredits) {
+      var packs = [2000, 5500, 13000];
+      var picked = 0;
+      packs.forEach(function (amount) {
+        var el = document.getElementById('pack-card-' + amount);
+        if (!el) return;
+        var fit = !!neededCredits && !picked && amount >= neededCredits;
+        if (fit) picked = amount;
+        el.classList.toggle('zc-pack--recommended', fit);
+      });
+      var note = document.getElementById('topup-needed-note');
+      if (note && neededCredits) {
+        note.textContent = appState.lang === 'zh'
+          ? ('本次还差 ' + neededCredits.toLocaleString() + ' 积分，选一个积分包即可继续')
+          : ('You need ' + neededCredits.toLocaleString() + ' more credits — pick a pack to continue');
+        note.classList.remove('hidden');
+      } else if (note) {
+        note.classList.add('hidden');
+      }
     }
 
     function closeTopupModal() {
       document.getElementById('topup-modal').classList.add('hidden');
     }
 
+    // 真实收款：填入 Stripe Payment Link 后自动跳转；留空则是演示模式（直接加积分）
+    var STRIPE_PAYMENT_LINKS = {
+      // '2000': 'https://buy.stripe.com/xxxx_starter',
+      // '5500': 'https://buy.stripe.com/xxxx_popular',
+      // '13000': 'https://buy.stripe.com/xxxx_pro'
+    };
+
     function purchaseCredits(amount, priceLabel) {
+      var link = STRIPE_PAYMENT_LINKS[String(amount)];
+      if (link) {
+        closeTopupModal();
+        window.open(link, '_blank', 'noopener');
+        return;
+      }
       appState.credits += amount;
       updatePromptAndPriceUI();
       closeTopupModal();
