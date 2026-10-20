@@ -3,7 +3,6 @@
   "installCommand": "npm install --omit=dev",
   "functions": {
     "api/**/*.js": {
-      "runtime": "@vercel/node@5",
       "maxDuration": 60
     }
   },
