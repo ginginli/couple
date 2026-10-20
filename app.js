@@ -1416,4 +1416,25 @@
       renderFaqs();
       renderWorksGrid();
       updatePromptAndPriceUI();
+      initCardVideos();
     });
+
+    // 用例卡内联视频：进入视口自动静音循环播放，离开视口暂停
+    function initCardVideos() {
+      var vids = document.querySelectorAll('video[data-autoplay-video]');
+      if (!vids.length) return;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce || !('IntersectionObserver' in window)) return; // 保持静态封面
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          var v = en.target;
+          if (en.isIntersecting) {
+            var p = v.play();
+            if (p && p.catch) p.catch(function () {});
+          } else {
+            v.pause();
+          }
+        });
+      }, { threshold: 0.35 });
+      for (var i = 0; i < vids.length; i++) io.observe(vids[i]);
+    }
