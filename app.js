@@ -1712,6 +1712,19 @@
       syncPackLinks();
       syncAccount();
       handleTopupReturn();
+
+      // 从 Creem 支付页切回来时自动刷新余额（不用手动刷新页面）
+      var lastSync = 0;
+      function resyncBalance() {
+        var now = Date.now();
+        if (!appState.user || now - lastSync < 8000) return;
+        lastSync = now;
+        syncAccount();
+      }
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') resyncBalance();
+      });
+      window.addEventListener('focus', resyncBalance);
     });
 
     // 用例卡内联视频：进入视口自动静音循环播放，离开视口暂停
