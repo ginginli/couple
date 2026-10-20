@@ -1441,6 +1441,49 @@
       } catch (e) { /* 老浏览器忽略 */ }
     }
 
+    // Creem：优先用官方 embed 浮层（不离开页面），embed.js 没加载成功则直接跳转
+    function loadCreemEmbed() {
+      if (appState.creemEmbed || document.getElementById('creem-embed-script')) return;
+      var sc = document.createElement('script');
+      sc.id = 'creem-embed-script';
+      sc.src = 'https://www.creem.io/embed.js';
+      sc.async = true;
+      sc.onload = function () { appState.creemEmbed = true; };
+      document.head.appendChild(sc);
+    }
+
+    function syncPackLinks() {
+      return fetch('/api/billing/links', { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j || !j.ok || !j.packs) return null;
+          appState.packLinks = j.packs;
+          var any = Object.keys(j.packs).some(function (k) { return j.packs[k] && j.packs[k].url; });
+          if (any) loadCreemEmbed();
+          return j.packs;
+        })
+        .catch(function () { return null; });
+    }
+
+    function openCreemCheckout(url, packKey) {
+      var link = appState.user && appState.user.email
+        ? url + (url.indexOf('?') === -1 ? '?' : '&') + 'email=' + encodeURIComponent(appState.user.email)
+        : url;
+      if (appState.creemEmbed) {
+        // embed.js 已就绪：临时挂一个带 data-creem-checkout 的锚点触发浮层
+        var a = document.createElement('a');
+        a.href = link;
+        a.setAttribute('data-creem-checkout', '');
+        a.setAttribute('data-creem-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { if (a.parentNode) a.parentNode.removeChild(a); }, 100);
+        return;
+      }
+      window.location.href = link; // 兜底：直接跳支付页
+    }
+
     function purchaseCredits(amount, priceLabel) {
       var packKey = PACK_KEY_BY_CREDITS[String(amount)] || 'popular';
 
@@ -1449,6 +1492,15 @@
         signInWithGoogle();
         return;
       }
+
+      // 有官方支付链接：直接开 Creem 结账（embed 浮层或跳转）
+      var linkInfo = appState.packLinks && appState.packLinks[packKey];
+      if (linkInfo && linkInfo.url) {
+        closeTopupModal();
+        openCreemCheckout(linkInfo.url, packKey);
+        return;
+      }
+
       if (appState.config && appState.config.billingEnabled === false) {
         showToast(t('billingNotConfigured'), 'error');
         return;
@@ -1657,6 +1709,7 @@
       initCardVideos();
       appState.selectedPack = 3000;
       selectPack(3000);
+      syncPackLinks();
       syncAccount();
       handleTopupReturn();
     });

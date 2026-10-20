@@ -109,7 +109,16 @@ async function upsertUser(profile) {
     lastLoginAt: new Date().toISOString()
   };
   await store.setJson(key, rec);
+  // 邮箱索引：Creem 的 payment link / embed 按钮无法携带 userId，
+  // webhook 只能靠付款邮箱反查账号来入账
+  if (rec.email) await store.setJson('idx:email:' + String(rec.email).toLowerCase(), rec.sub);
   return rec;
+}
+
+/** 按邮箱反查 sub（支付回调兜底用） */
+async function findByEmail(email) {
+  if (!email) return null;
+  return store.getJson('idx:email:' + String(email).toLowerCase());
 }
 
 async function getUser(sub) {
@@ -146,6 +155,7 @@ module.exports = {
   verifyGoogleIdToken,
   upsertUser,
   getUser,
+  findByEmail,
   readUser,
   requireUser
 };

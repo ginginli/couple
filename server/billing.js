@@ -11,6 +11,7 @@
  */
 const crypto = require('crypto');
 const http = require('./http');
+const auth = require('./auth');
 const credits = require('./credits');
 
 const API_KEY = process.env.CREEM_API_KEY || '';
@@ -25,8 +26,21 @@ const PRODUCTS = {
   pro: process.env.CREEM_PRODUCT_PRO || ''
 };
 
+// 有 API key 走动态结账（可带 metadata）；只有 product id 也能用官方支付链接
 function enabled() {
-  return !!(API_KEY && (PRODUCTS.starter || PRODUCTS.popular || PRODUCTS.pro));
+  return !!(API_KEY || PRODUCTS.starter || PRODUCTS.popular || PRODUCTS.pro);
+}
+
+/** 官方支付链接：https://www.creem.io/payment/<product_id> */
+function paymentLink(packKey) {
+  const pid = PRODUCTS[packKey];
+  return pid ? 'https://www.creem.io/payment/' + pid : null;
+}
+
+/** 取某档的结账地址：优先 API 动态创建，否则回落到官方静态链接 */
+function linkFor(packKey) {
+  const l = paymentLink(packKey);
+  return { ok: !!l, url: l, mode: API_KEY ? 'api' : 'link' };
 }
 
 function packKeyByProductId(pid) {
@@ -76,10 +90,16 @@ async function handleCompleted(event) {
   const obj = event.object || event.data || event;
   const meta = obj.metadata || (obj.custom_data) || {};
   const packKey = meta.packKey || packKeyByProductId(obj.product_id || obj.product || (obj.product && obj.product.id));
-  const userId = meta.userId || obj.userId || null;
+  let userId = meta.userId || obj.userId || null;
+
+  // 链接/embed 支付无法携带 metadata：用付款邮箱反查账号
+  if (!userId) {
+    const email = (obj.customer && obj.customer.email) || obj.customer_email || obj.email || null;
+    if (email) userId = await auth.findByEmail(email);
+  }
   const pack = credits.PACKS[packKey] || null;
 
-  if (!userId) return { ok: false, error: 'no_user_in_metadata' };
+  if (!userId) return { ok: false, error: 'no_user_found', hint: 'metadata.userId 缺失且邮箱未匹配到账号（用户可能未登录即付款）' };
   if (!pack) return { ok: false, error: 'unknown_pack' };
 
   const keyId = orderId || ('evt:' + (event.eventId || Date.now()));
@@ -107,6 +127,8 @@ const COMPLETED_EVENTS = ['checkout.completed', 'order.completed', 'order.paid',
 
 module.exports = {
   enabled,
+  paymentLink,
+  linkFor,
   PRODUCTS,
   createCheckout,
   verifySignature,
