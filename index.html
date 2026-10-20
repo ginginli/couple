@@ -72,7 +72,7 @@
       <button type="button" onclick="scrollToSection('sec-howto')" class="zc-chip" data-i18n="navHowto">How To</button>
       <button type="button" onclick="scrollToSection('sec-why-choose')" class="zc-chip" data-i18n="navWhyChoose">Why Choose</button>
       <button type="button" onclick="scrollToSection('sec-faq')" class="zc-chip" data-i18n="navFaq">FAQs</button>
-      <button type="button" onclick="openApiModal()" class="zc-chip zc-chip--accent">
+      <button type="button" onclick="openApiModal()" class="zc-owner-only hidden zc-chip zc-chip--accent">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
         <span data-i18n="navApi">Prompt & API</span>
       </button>
@@ -91,7 +91,7 @@
       </div>
 
       <!-- Prompt / Deploy Inspector Button (Mobile/Tablet visible too) -->
-      <button type="button" onclick="openApiModal()" title="Storyboard prompt & deployment guide" class="lg:hidden p-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] text-rose-400 hover:bg-[var(--color-surface-hover)] transition-colors">
+      <button type="button" onclick="openApiModal()" title="Storyboard prompt & deployment guide" class="zc-owner-only hidden lg:hidden p-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] text-rose-400 hover:bg-[var(--color-surface-hover)] transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
       </button>
 
@@ -294,7 +294,7 @@
         </button>
         <div class="flex items-center justify-between text-[11px] text-[var(--color-text-muted)] px-1">
           <span data-i18n="estTimeLabel">⏱️ Est. time: 4–5 mins (5s in demo)</span>
-          <button type="button" onclick="openApiModal()" class="text-rose-400 hover:underline font-medium" data-i18n="connectApiLink">Connect API →</button>
+          <button type="button" onclick="openApiModal()" class="zc-owner-only hidden text-rose-400 hover:underline font-medium" data-i18n="connectApiLink">Connect API →</button>
         </div>
       </div>
     </aside>
@@ -614,7 +614,7 @@
               <p class="mt-1">© 2026 zombie-couple.xyz. All rights reserved.</p>
             </div>
             <div class="flex flex-wrap gap-4">
-              <button type="button" onclick="openApiModal()" class="hover:text-[var(--color-text)] transition-colors">API & Deployment Guide</button>
+              <button type="button" onclick="openApiModal()" class="zc-owner-only hidden hover:text-[var(--color-text)] transition-colors">API & Deployment Guide</button>
               <button type="button" onclick="openTopupModal()" class="hover:text-[var(--color-text)] transition-colors">Buy Credits</button>
               <button type="button" onclick="scrollToSection('sec-faq')" class="hover:text-[var(--color-text)] transition-colors">FAQ</button>
             </div>

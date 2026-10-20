@@ -72,7 +72,7 @@
       <button type="button" onclick="scrollToSection('sec-howto')" class="zc-chip" data-i18n="navHowto">使用方法</button>
       <button type="button" onclick="scrollToSection('sec-why-choose')" class="zc-chip" data-i18n="navWhyChoose">为什么选我们</button>
       <button type="button" onclick="scrollToSection('sec-faq')" class="zc-chip" data-i18n="navFaq">常见问题</button>
-      <button type="button" onclick="openApiModal()" class="zc-chip zc-chip--accent">
+      <button type="button" onclick="openApiModal()" class="zc-owner-only hidden zc-chip zc-chip--accent">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
         <span data-i18n="navApi">Prompt & 部署配置</span>
       </button>
@@ -93,7 +93,7 @@
       </div>
 
       <!-- Prompt / Deploy Inspector Button (Mobile/Tablet visible too) -->
-      <button type="button" onclick="openApiModal()" title="查看分镜 Prompt 与网站部署指南" class="lg:hidden p-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] text-rose-400 hover:bg-[var(--color-surface-hover)] transition-colors">
+      <button type="button" onclick="openApiModal()" title="查看分镜 Prompt 与网站部署指南" class="zc-owner-only hidden lg:hidden p-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] text-rose-400 hover:bg-[var(--color-surface-hover)] transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
       </button>
 
@@ -298,7 +298,7 @@
         </button>
         <div class="flex items-center justify-between text-[11px] text-[var(--color-text-muted)] px-1">
           <span data-i18n="estTimeLabel">⏱️ 预计耗时：约 4–5 分钟 (演示模式 6 秒)</span>
-          <button type="button" onclick="openApiModal()" class="text-rose-400 hover:underline font-medium" data-i18n="connectApiLink">接入真实 API →</button>
+          <button type="button" onclick="openApiModal()" class="zc-owner-only hidden text-rose-400 hover:underline font-medium" data-i18n="connectApiLink">接入真实 API →</button>
         </div>
       </div>
     </aside>
@@ -628,7 +628,7 @@
               <p class="mt-1">© 2026 zombie-couple.xyz. 保留所有权利。</p>
             </div>
             <div class="flex flex-wrap gap-4">
-              <button type="button" onclick="openApiModal()" class="hover:text-[var(--color-text)] transition-colors">API 接口与部署指南</button>
+              <button type="button" onclick="openApiModal()" class="zc-owner-only hidden hover:text-[var(--color-text)] transition-colors">API 接口与部署指南</button>
               <button type="button" onclick="openTopupModal()" class="hover:text-[var(--color-text)] transition-colors">购买积分</button>
               <button type="button" onclick="scrollToSection('sec-faq')" class="hover:text-[var(--color-text)] transition-colors">常见问题</button>
             </div>

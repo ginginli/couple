@@ -229,9 +229,12 @@
     }
 
     function updatePromptAndPriceUI() {
-      if (typeof window !== 'undefined' && /(?:^|&)debug=1/.test(window.location.search) ) {
+      if (isDebugMode()) {
         var dbg = document.getElementById('live-prompt-card');
         if (dbg) dbg.classList.remove('hidden');
+        document.querySelectorAll('.zc-owner-only').forEach(function (el) {
+          el.classList.remove('hidden');
+        });
       }
       var promptBox = document.getElementById('live-prompt-box');
       if (promptBox) {
@@ -1189,7 +1192,12 @@
       };
     }
 
+    function isDebugMode() {
+      return typeof window !== 'undefined' && /(?:\?|&)debug=1(?:&|$)/.test(window.location.search);
+    }
+
     function updateApiSnippetUI() {
+      if (!isDebugMode()) return;
       var codeEl = document.getElementById('api-code-preview');
       if (!codeEl) return;
       var payload = buildGenerationPayload();
@@ -1197,6 +1205,7 @@
     }
 
     function openApiModal() {
+      if (!isDebugMode()) return;
       updateApiSnippetUI();
       document.getElementById('api-modal').classList.remove('hidden');
     }
