@@ -131,6 +131,69 @@ async function ledger(rawCode, limit) {
   return store.list('ledger:' + normalize(rawCode), limit || 50);
 }
 
+
+/* ---------------- 账号制积分（方案 B）：按 user.sub 记账 ----------------
+ * 与上面的兑换码账本并存：码制用于离线发放，账号制用于登录用户。
+ * 键： bal:u:<sub> / ledger:u:<sub>
+ */
+async function balanceUser(sub) {
+  if (!sub) return 0;
+  const v = await store.getNumber('bal:u:' + sub);
+  return v === null ? 0 : v;
+}
+
+/** 加积分（充值 / 补偿 / 退款共用） */
+async function grantUser(sub, amount, note, meta) {
+  if (!sub || !amount) return { ok: false, error: 'bad_args' };
+  const next = await store.addNumber('bal:u:' + sub, Number(amount));
+  await store.push('ledger:u:' + sub, {
+    t: new Date().toISOString(),
+    type: 'topup',
+    amount: Number(amount),
+    balance: next,
+    note: note || 'grant',
+    meta: meta || null
+  });
+  return { ok: true, balance: next, granted: Number(amount) };
+}
+
+/** 扣积分：余额不足返回 ok:false（调用方回 402） */
+async function spendUser(sub, amount, note) {
+  if (!sub) return { ok: false, error: 'no_user' };
+  const cur = await balanceUser(sub);
+  if (cur < amount) return { ok: false, error: 'insufficient_credits', balance: cur, need: amount };
+  const next = await store.addNumber('bal:u:' + sub, -Number(amount));
+  await store.push('ledger:u:' + sub, {
+    t: new Date().toISOString(),
+    type: 'spend',
+    amount: -Number(amount),
+    balance: next,
+    note: note || 'render'
+  });
+  return { ok: true, balance: next, spent: Number(amount) };
+}
+
+/** 渲染失败/超时退款 */
+async function refundUser(sub, amount, note) {
+  return grantUser(sub, Number(amount), note || 'job_failed', { kind: 'refund' });
+}
+
+async function ledgerUser(sub, limit) {
+  if (!sub) return [];
+  return store.list('ledger:u:' + sub, limit || 50);
+}
+
+/** 订单幂等：同一笔订单只入账一次 */
+async function orderDone(orderId) {
+  if (!orderId) return null;
+  return store.getJson('order:' + orderId);
+}
+
+async function markOrder(orderId, record) {
+  await store.setJson('order:' + orderId, record);
+  return record;
+}
+
 module.exports = {
   PACKS,
   TIER_CREDITS,
@@ -143,5 +206,13 @@ module.exports = {
   spend,
   refund,
   ledger,
-  normalize
+  normalize,
+  // 账号制
+  balanceUser,
+  grantUser,
+  spendUser,
+  refundUser,
+  ledgerUser,
+  orderDone,
+  markOrder
 };

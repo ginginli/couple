@@ -22,6 +22,11 @@
         sampleSurvivorSlot: 'Survivor Chen Mo (@Image2)',
         playClip: '▶ Play the 13s clip',
         downloadVideo: 'Download video',
+        signInGoogle: 'Sign in with Google',
+        signOut: 'Sign out',
+        loginRequired: 'Please sign in with Google to generate',
+        billingNotConfigured: 'Top-up is not open yet - check back soon',
+        topupSuccess: 'Payment received - credits added',
         muted: 'Muted',
         audioScore: 'Heartbeat + piano score',
         roleInfected: 'Infected partner',
@@ -59,6 +64,11 @@
         sampleSurvivorSlot: '幸存者陈默 (@Image2)',
         playClip: '▶ 播放 13 秒成片',
         downloadVideo: '下载视频',
+        signInGoogle: '用 Google 登录',
+        signOut: '退出登录',
+        loginRequired: '请先登录再生成',
+        billingNotConfigured: '充值通道暂未开启，请稍后再来',
+        topupSuccess: '支付成功，积分已到账',
         muted: '已静音',
         audioScore: '心跳+钢琴配乐',
         roleInfected: '被感染伴侣',
@@ -479,6 +489,17 @@
         return;
       }
 
+      // 登录用户：积分由服务端预扣（失败自动退），本地不再扣
+      appState.serverBilled = !!(BACKEND.enabled && appState.apiEndpoint && appState.user);
+      if (appState.serverBilled) {
+        switchRightTab('works');
+        var progCardB = document.getElementById('generation-progress-card');
+        if (progCardB) progCardB.classList.remove('hidden');
+        if (activeGenInterval) clearInterval(activeGenInterval);
+        submitRealGeneration(cost);
+        return;
+      }
+
       appState.credits -= cost;
       updatePromptAndPriceUI();
       switchRightTab('works');
@@ -624,9 +645,26 @@
         if (!job || !job.ok || !job.statusUrl) {
           throw new Error((job && job.error) || 'bad response from backend');
         }
+        if (typeof job.balance === 'number') {
+          appState.credits = job.balance;
+          updatePromptAndPriceUI();
+        }
         startJobPolling(job, cost);
       }).catch(function (e) {
-        refundCredits(cost);
+        if (e && e.httpStatus === 401) {
+          hideProgressCard();
+          showToast(t('loginRequired'), 'error');
+          signInWithGoogle();
+          return;
+        }
+        if (e && e.httpStatus === 402) {
+          hideProgressCard();
+          syncAccount();
+          openTopupModal(TIER_PRICES[appState.resolution]);
+          showToast(appState.lang === 'zh' ? '积分不足，请充值' : 'Not enough credits — please top up', 'error');
+          return;
+        }
+        if (!appState.serverBilled) refundCredits(cost);
         if (e && (e.httpStatus === 404 || e.httpStatus === 405 || e.httpStatus === 501)) {
           // 后端还没部署：静默回落到演示模式
           runDemoGeneration(cost);
@@ -705,13 +743,16 @@
       };
       appState.works.unshift(newWork);
       renderWorksGrid();
+      if (appState.serverBilled) syncAccount();
       showToast(appState.lang === 'zh' ? '🎉 13 秒僵尸重逢短片已生成完毕！' : '🎉 13s Zombie Love Story generated!');
       openPreviewModalByWork(0);
     }
 
     function failRealGeneration(cost) {
       hideProgressCard();
-      refundCredits(cost);
+      // 服务端已预扣的任务由服务端退款；本地演示模式才在这里退
+      if (appState.serverBilled) syncAccount();
+      else refundCredits(cost);
       showToast(appState.lang === 'zh'
         ? '渲染失败，已按退款政策退回全部积分'
         : 'Render failed — full credit refund per our refund policy', 'error');
@@ -1226,19 +1267,175 @@
       // '20000': 'https://buy.stripe.com/xxxx_pro'        // $99.00  ← 高价锚点
     };
 
-    function purchaseCredits(amount, priceLabel) {
-      var link = STRIPE_PAYMENT_LINKS[String(amount)];
-      if (link) {
-        closeTopupModal();
-        window.open(link, '_blank', 'noopener');
+
+    // ======================= 账户体系 =======================
+    // 登录用户的积分余额以服务端为准；未登录沿用本地演示余额
+    var PACK_KEY_BY_CREDITS = { '2000': 'starter', '3000': 'popular', '20000': 'pro' };
+
+    function syncAccount() {
+      return fetch('/api/account/me', { credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (!data || !data.ok) return null;
+          appState.user = data.user || null;
+          appState.config = data.config || {};
+          if (appState.user && typeof data.credits === 'number') {
+            appState.credits = data.credits;
+            updatePromptAndPriceUI();
+          }
+          renderAccountChip();
+          if (appState.config && appState.config.googleClientId) loadGoogleIdentity();
+          return appState.user;
+        })
+        .catch(function () { renderAccountChip(); return null; });
+    }
+
+    function loadGoogleIdentity() {
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        initGoogleIdentity();
         return;
       }
-      appState.credits += amount;
-      updatePromptAndPriceUI();
-      closeTopupModal();
-      showToast(appState.lang === 'zh'
-        ? ('🎉 充值成功 (' + priceLabel + ')！已到账 +' + amount.toLocaleString() + ' 积分')
-        : ('🎉 Top-up successful (' + priceLabel + ')! +' + amount.toLocaleString() + ' credits added'));
+      if (document.getElementById('gis-script')) return;
+      var sc = document.createElement('script');
+      sc.id = 'gis-script';
+      sc.src = 'https://accounts.google.com/gsi/client';
+      sc.async = true;
+      sc.defer = true;
+      sc.onload = initGoogleIdentity;
+      document.head.appendChild(sc);
+    }
+
+    function initGoogleIdentity() {
+      if (!appState.config || !appState.config.googleClientId) return;
+      if (!window.google || !window.google.accounts || !window.google.accounts.id) return;
+      try {
+        google.accounts.id.initialize({
+          client_id: appState.config.googleClientId,
+          callback: handleGoogleCredential,
+          auto_select: false,
+          cancel_on_tap_outside: true
+        });
+        appState.gisReady = true;
+      } catch (e) { /* 忽略 */ }
+    }
+
+    function handleGoogleCredential(resp) {
+      if (!resp || !resp.credential) return;
+      fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ idToken: resp.credential })
+      }).then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+        .then(function (res) {
+          if (!res.body || !res.body.ok) {
+            showToast(appState.lang === 'zh' ? '登录失败，请重试' : 'Sign-in failed, please retry', 'error');
+            return;
+          }
+          appState.user = res.body.user;
+          appState.credits = typeof res.body.credits === 'number' ? res.body.credits : appState.credits;
+          updatePromptAndPriceUI();
+          renderAccountChip();
+          showToast(appState.lang === 'zh'
+            ? ('\u2705 已登录：' + (appState.user.email || appState.user.name))
+            : ('\u2705 Signed in as ' + (appState.user.email || appState.user.name)));
+        })
+        .catch(function () {
+          showToast(appState.lang === 'zh' ? '登录失败，请重试' : 'Sign-in failed, please retry', 'error');
+        });
+    }
+
+    function signInWithGoogle() {
+      if (!appState.config || !appState.config.googleClientId) {
+        showToast(appState.lang === 'zh'
+          ? '登录未配置（服务端需设置 GOOGLE_CLIENT_ID）'
+          : 'Sign-in not configured (GOOGLE_CLIENT_ID missing)', 'error');
+        return;
+      }
+      if (appState.gisReady && window.google && window.google.accounts) {
+        google.accounts.id.prompt();
+        return;
+      }
+      loadGoogleIdentity();
+      setTimeout(function () {
+        if (appState.gisReady && window.google && window.google.accounts) google.accounts.id.prompt();
+      }, 800);
+    }
+
+    function signOut() {
+      fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' })
+        .then(function () {})
+        .catch(function () {})
+        .then(function () {
+          appState.user = null;
+          renderAccountChip();
+          showToast(appState.lang === 'zh' ? '已退出登录' : 'Signed out');
+        });
+    }
+
+    function renderAccountChip() {
+      var host = document.getElementById('account-chip');
+      if (!host) return;
+      if (appState.user) {
+        var pic = appState.user.picture
+          ? '<img src="' + appState.user.picture + '" alt="" class="w-6 h-6 rounded-full border border-[var(--color-border)]" />'
+          : '<div class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-[11px] font-bold">'
+            + String(appState.user.name || 'U').charAt(0).toUpperCase() + '</div>';
+        host.innerHTML =
+          '<div class="flex items-center gap-1.5">' + pic +
+          '<span class="hidden sm:inline text-[11px] font-semibold text-[var(--color-text)] max-w-[120px] truncate">'
+          + (appState.user.name || appState.user.email || '') + '</span>' +
+          '<button type="button" onclick="signOut()" class="zc-chip">' + t('signOut') + '</button></div>';
+      } else {
+        host.innerHTML =
+          '<button type="button" onclick="signInWithGoogle()" class="zc-chip zc-chip--primary">' + t('signInGoogle') + '</button>';
+      }
+    }
+
+    function handleTopupReturn() {
+      if (!/(?:\?|&)topup=success(?:&|$)/.test(window.location.search)) return;
+      syncAccount().then(function () {
+        showToast(appState.lang === 'zh' ? ('\uD83C\uDF89 ' + t('topupSuccess')) : ('\uD83C\uDF89 ' + t('topupSuccess')));
+      });
+      try {
+        var url = new URL(window.location.href);
+        url.searchParams.delete('topup');
+        window.history.replaceState({}, '', url.toString());
+      } catch (e) { /* 老浏览器忽略 */ }
+    }
+
+    function purchaseCredits(amount, priceLabel) {
+      var packKey = PACK_KEY_BY_CREDITS[String(amount)] || 'popular';
+
+      if (!appState.user) {
+        showToast(t('loginRequired'), 'error');
+        signInWithGoogle();
+        return;
+      }
+      if (appState.config && appState.config.billingEnabled === false) {
+        showToast(t('billingNotConfigured'), 'error');
+        return;
+      }
+
+      fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ packKey: packKey })
+      }).then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+        .then(function (res) {
+          if (res.status === 501 || (res.body && res.body.error === 'billing_not_configured')) {
+            showToast(t('billingNotConfigured'), 'error');
+            return;
+          }
+          if (res.body && res.body.ok && res.body.url) {
+            closeTopupModal();
+            window.location.href = res.body.url;
+            return;
+          }
+          showToast((res.body && res.body.error) || 'checkout failed', 'error');
+        })
+        .catch(function () { showToast('checkout failed', 'error'); });
     }
 
     function slotImageUrl(slot, fallback) {
@@ -1421,6 +1618,8 @@
       renderWorksGrid();
       updatePromptAndPriceUI();
       initCardVideos();
+      syncAccount();
+      handleTopupReturn();
     });
 
     // 用例卡内联视频：进入视口自动静音循环播放，离开视口暂停
