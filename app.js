@@ -295,13 +295,40 @@
       var reader = new FileReader();
       reader.onload = function(e) {
         var targetSlot = slotNum === 1 ? appState.slot1 : appState.slot2;
-        targetSlot.loaded = true;
-        targetSlot.name = file.name;
-        targetSlot.src = e.target.result;
-        renderSlotUI(slotNum);
-        showToast(slotNum === 1 ? t('uploadedPhoto1') : t('uploadedPhoto2'));
+        compressImage(e.target.result, 1280, 0.82).then(function(dataUri) {
+          targetSlot.loaded = true;
+          targetSlot.name = file.name;
+          targetSlot.src = dataUri;
+          targetSlot.imageUrl = ''; // 提交时由 /api/ai/uploads 换成公网 URL
+          renderSlotUI(slotNum);
+          showToast(slotNum === 1 ? t('uploadedPhoto1') : t('uploadedPhoto2'));
+        });
       };
       reader.readAsDataURL(file);
+    }
+
+    // 手机原图动辄 5-10MB，Vercel Serverless 请求体上限 4.5MB —— 先压到长边 1280 / JPEG 0.82
+    function compressImage(dataUri, maxSide, quality) {
+      return new Promise(function(resolve) {
+        if (!/^data:image\//.test(dataUri)) { resolve(dataUri); return; }
+        var img = new Image();
+        img.onload = function() {
+          try {
+            var scale = Math.min(1, (maxSide || 1280) / Math.max(img.width, img.height));
+            var cw = Math.max(1, Math.round(img.width * scale));
+            var ch = Math.max(1, Math.round(img.height * scale));
+            var canvas = document.createElement('canvas');
+            canvas.width = cw;
+            canvas.height = ch;
+            canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
+            resolve(canvas.toDataURL('image/jpeg', quality || 0.82));
+          } catch (err) {
+            resolve(dataUri);
+          }
+        };
+        img.onerror = function() { resolve(dataUri); };
+        img.src = dataUri;
+      });
     }
 
     function clearPhotoSlot(slotNum) {
@@ -309,6 +336,7 @@
       targetSlot.loaded = false;
       targetSlot.name = '';
       targetSlot.src = '';
+      targetSlot.imageUrl = '';
       var fileInput = document.getElementById('file-input-' + slotNum);
       if (fileInput) fileInput.value = '';
       renderSlotUI(slotNum);
@@ -515,9 +543,61 @@
     function submitRealGeneration(cost) {
       var statusTitle = document.getElementById('gen-status-title');
       if (statusTitle) {
-        statusTitle.textContent = appState.lang === 'zh' ? '已提交渲染任务，排队中…' : 'Job submitted, queued…';
+        statusTitle.textContent = appState.lang === 'zh' ? '正在上传照片…' : 'Uploading photos…';
       }
 
+      ensureUploadedImages().then(function(ok) {
+        if (!ok) {
+          refundCredits(cost);
+          hideProgressCard();
+          showToast(appState.lang === 'zh' ? '照片上传失败，已退回积分' : 'Photo upload failed, credits refunded', 'error');
+          return;
+        }
+        if (statusTitle) {
+          statusTitle.textContent = appState.lang === 'zh' ? '已提交渲染任务，排队中…' : 'Job submitted, queued…';
+        }
+        postGenerationJob(cost);
+      });
+    }
+
+    function uploadsEndpoint() {
+      return String(appState.apiEndpoint).replace(/templates\/?$/, 'uploads');
+    }
+
+    function ensureUploadedImages() {
+      var jobs = [];
+      [1, 2].forEach(function(n) {
+        var slot = n === 1 ? appState.slot1 : appState.slot2;
+        // 示例图本来就是 http(s) 资源，不用上传；只有本地上传的 data URI 需要换 URL
+        if (slot.src && /^data:image\//.test(slot.src) && !slot.imageUrl) {
+          jobs.push(uploadSlotImage(slot));
+        }
+      });
+      if (!jobs.length) return Promise.resolve(true);
+      return Promise.all(jobs).then(function(results) {
+        return results.every(Boolean);
+      }).catch(function() { return false; });
+    }
+
+    function uploadSlotImage(slot) {
+      return fetch(uploadsEndpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images: [slot.src] })
+      }).then(function(res) { return res.json(); }).then(function(data) {
+        if (data && data.ok && data.urls && data.urls[0]) {
+          slot.imageUrl = data.urls[0];
+          return true;
+        }
+        console.warn('upload failed:', data && data.error);
+        return false;
+      }).catch(function(e) {
+        console.warn('upload error:', e && e.message);
+        return false;
+      });
+    }
+
+    function postGenerationJob(cost) {
       fetch(appState.apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
