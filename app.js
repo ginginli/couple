@@ -229,6 +229,10 @@
     }
 
     function updatePromptAndPriceUI() {
+      if (typeof window !== 'undefined' && /(?:^|&)debug=1/.test(window.location.search) ) {
+        var dbg = document.getElementById('live-prompt-card');
+        if (dbg) dbg.classList.remove('hidden');
+      }
       var promptBox = document.getElementById('live-prompt-box');
       if (promptBox) {
         promptBox.textContent = getAssembledPrompt();
