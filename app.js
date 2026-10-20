@@ -21,7 +21,6 @@
         sampleSurvivor: 'Survivor Chen Mo',
         sampleSurvivorSlot: 'Survivor Chen Mo (@Image2)',
         playClip: '▶ Play the 13s clip',
-        downloadPack: 'Download config',
         muted: 'Muted',
         audioScore: 'Heartbeat + piano score',
         roleInfected: 'Infected partner',
@@ -58,7 +57,6 @@
         sampleSurvivor: '幸存者 陈默',
         sampleSurvivorSlot: '幸存者陈默 (@Image2)',
         playClip: '▶ 播放 13 秒成片',
-        downloadPack: '下载参数包',
         muted: '已静音',
         audioScore: '心跳+钢琴配乐',
         roleInfected: '被感染伴侣',
@@ -162,7 +160,7 @@
     var TIER_PRICES = {
       '480p': 350,
       '720p': 600,
-      '1080p': 1050
+      '1080p': 2100
     };
 
     // Exchange rate: 1 credit = $0.005  ->  200 credits = $1
@@ -172,15 +170,9 @@
       return '$' + (credits * CREDIT_USD).toFixed(2);
     }
 
-    var BASE_PROMPT_TEMPLATE =
-      "A 13-second, four-shot cinematic short film about a viral outbreak. @Image1 is the loved one who has been infected; @Image2 is the survivor.\n\n" +
-      "HOW @Image1 LOOKS NOW: exactly the same person as in @Image1 - the same face shape, eyes, nose, mouth, hairstyle, facial hair and glasses if any, the same age, and the same clothes as in @Image1, now dusty and frayed. The infection only drains their colour, like careful film makeup on an intact face: ash-grey pale skin, faint dark veins at the temples and neck, milky white eyes, dry pale lips, messy dusty hair. Their skin stays smooth and whole and their face stays fully human, so anyone who knows them recognizes them at a glance. If @Image1 is a pet, it is the same animal with the same breed, size, fur colour, markings and collar, its coat dusty and greyed and its eyes milky white. The survivor from @Image2 is never infected: their eyes, skin and face stay completely normal in every shot.\n\n" +
-      "Shot 1 (0-2s): dusk in {setting}, cold grey fog. Close-up on the infected @Image1 slowly shuffling out of the fog toward the camera, its face filling the frame and coming into focus: it is unmistakably @Image1.\n\n" +
-      "Shot 2 (2-6s): close on the survivor from @Image2 aiming a handgun with both trembling hands at the infected figure. Tears run down the survivor's face, their jaw shakes, they cannot pull the trigger. They slowly lower the gun and let it drop to the ground.\n\n" +
-      "Shot 3 (6-10s): a wide, fixed side-on shot with both of them in frame, about ten metres apart. The infected @Image1 flings its arms wide open and sprints at the survivor, fast and ferocious, snarling, covering the whole distance (a pet races toward them instead). The survivor stays where they are, eyes closed, and opens their arms.\n\n" +
-      "Shot 4 (10-13s): at the exact moment of impact, a seamless cut on the same camera angle to the same place on a warm, sunny day before the outbreak. The momentum carries straight on: @Image1, healthy and looking exactly like their photo, tackles the survivor and they both tumble onto the ground, then lie there wrapped in a hug, laughing, in golden light (a pet knocks them over and they roll around together).\n\n" +
-      "Audio: a low tense drone and a heartbeat in shots 1 to 3, switching at the cut to a soft, warm piano melody; no dialogue. Photorealistic, film grain, cinematic lighting. The gun is never fired. No blood, no gore, no wounds, no kissing, no text, no logos.";
-
+    // 核心 4 镜头 prompt 已移到服务端（server/prompt.js）：
+    // 客户端不再持有配方，只提交 world / resolution / 图片 URL。
+    // ?debug=1 面板也不再回显全文，避免任何人打开 app.js 就拿到。
     var FAQS_DATA = {
       zh: [
         { q: "僵尸情侣视频怎么做？", a: "第一张传伴侣的照片，第二张传你自己，选好场景就能生成。伴侣被感染后从浓雾里走来，你放下枪，TA 朝你冲过来，画面切到晴天，同样的冲势变成抱在一起大笑。一条大约四到五分钟。" },
@@ -226,9 +218,11 @@
       }, 2800);
     }
 
-    function getAssembledPrompt() {
-      var worldSetting = WORLD_MAP[appState.world].value;
-      return BASE_PROMPT_TEMPLATE.replace('{setting}', worldSetting);
+    // 配方不再存在于前端：这里只给 ?debug=1 面板一句说明
+    function promptHiddenNotice() {
+      return appState.lang === 'zh'
+        ? '\u{1F512} 4 镜头 prompt 已在服务端组装（server/prompt.js），浏览器不再持有，也不再回显。'
+        : '\u{1F512} The 4-shot prompt is assembled server-side (server/prompt.js). It is never sent to the browser.';
     }
 
     function updatePromptAndPriceUI() {
@@ -241,7 +235,7 @@
       }
       var promptBox = document.getElementById('live-prompt-box');
       if (promptBox) {
-        promptBox.textContent = getAssembledPrompt();
+        promptBox.textContent = promptHiddenNotice();
       }
       var cost = TIER_PRICES[appState.resolution];
       var genBtnText = document.getElementById('generate-btn-text');
@@ -755,9 +749,6 @@
                 '<button type="button" onclick="openPreviewModalByWork(' + i + ')" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-colors">' +
                   t('playClip') +
                 '</button>' +
-                '<button type="button" onclick="downloadStoryboardJson()" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] text-xs font-medium transition-colors">' +
-                  t('downloadPack') +
-                '</button>' +
               '</div>' +
             '</div>' +
           '</div>';
@@ -1249,9 +1240,8 @@
         domain: "zombie-couple.xyz",
         templateSlug: "zombie-love-story",
         interfaceId: "dea38f30-c9e1-47dd-be48-4648a7e59f99",
-        model: "bytedance/seedance-v2.5-text-ref",
+        world: appState.world,
         params: {
-          prompt: getAssembledPrompt(),
           duration: 13,
           aspect_ratio: "9:16",
           resolution: appState.resolution,
@@ -1325,7 +1315,7 @@
     }
 
     function copyCurrentPrompt() {
-      copyTextWithFallback(getAssembledPrompt(), appState.lang === 'zh' ? '✅ 已复制完整四镜头英文 Prompt！' : '✅ Copied 4-shot system prompt!');
+      showToast(promptHiddenNotice(), 'error');
     }
 
     function copyApiSnippet() {
@@ -1373,7 +1363,7 @@
         world: WORLD_MAP[appState.world],
         resolution: appState.resolution,
         creditsCost: TIER_PRICES[appState.resolution],
-        prompt: getAssembledPrompt()
+        prompt: '(assembled server-side)',
       };
       var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       var url = URL.createObjectURL(blob);

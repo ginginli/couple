@@ -11,6 +11,7 @@
  */
 const adapter = require('../../server/provider-adapter');
 const tokens = require('../../server/tokens');
+const { buildPrompt } = require('../../server/prompt');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -18,9 +19,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     return res.status(200).json({
       ok: true,
-      endpoint: 'POST /api/ai/templates',
-      providers: adapter.DEFAULT_CHAIN,
-      note: 'Send the storyboard params to start a render job.'
+      endpoint: 'POST /api/ai/templates'
     });
   }
 
@@ -39,12 +38,16 @@ module.exports = async function handler(req, res) {
   }
   const params = (body && body.params) || {};
 
-  if (!params.prompt) {
-    return res.status(400).json({ ok: false, error: 'params.prompt is required' });
+  // prompt 由服务端组装：客户端只提交 world（city/snow/highway）
+  const prompt = (typeof params.prompt === 'string' && params.prompt.trim())
+    ? params.prompt
+    : buildPrompt({ world: body.world || params.world || 'city' });
+  if (!prompt) {
+    return res.status(400).json({ ok: false, error: 'could not build prompt' });
   }
 
   const input = {
-    prompt: params.prompt,
+    prompt: prompt,
     imageUrls: params.image_urls || [],
     duration: params.duration || 13,
     aspectRatio: params.aspect_ratio || '9:16',
