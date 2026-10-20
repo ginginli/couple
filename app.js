@@ -21,6 +21,7 @@
         sampleSurvivor: 'Survivor Chen Mo',
         sampleSurvivorSlot: 'Survivor Chen Mo (@Image2)',
         playClip: '▶ Play the 13s clip',
+        downloadVideo: 'Download video',
         muted: 'Muted',
         audioScore: 'Heartbeat + piano score',
         roleInfected: 'Infected partner',
@@ -57,6 +58,7 @@
         sampleSurvivor: '幸存者 陈默',
         sampleSurvivorSlot: '幸存者陈默 (@Image2)',
         playClip: '▶ 播放 13 秒成片',
+        downloadVideo: '下载视频',
         muted: '已静音',
         audioScore: '心跳+钢琴配乐',
         roleInfected: '被感染伴侣',
@@ -128,6 +130,7 @@
           role1: t('rolePartner'),
           role2: t('roleSurvivor'),
           coverSrc: ASSET_BASE + 'scene-ruined-city.jpg',
+          videoUrl: ASSET_BASE + 'videos/scene-ruined-city.mp4',
           createdAt: t('createdJustNow')
         }
       ]
@@ -732,6 +735,9 @@
           '<div class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden shadow-sm flex flex-col sm:flex-row gap-3 p-3">' +
             '<button type="button" onclick="openPreviewModalByWork(' + i + ')" class="relative w-full sm:w-36 aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 shrink-0 group">' +
               '<img src="' + w.coverSrc + '" alt="' + w.title + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />' +
+              (w.videoUrl
+                ? '<video src="' + w.videoUrl + '" poster="' + w.coverSrc + '" muted loop playsinline preload="metadata" data-autoplay-video tabindex="-1" aria-hidden="true" class="w-full h-full object-cover"></video>'
+                : '') +
               '<div class="absolute inset-0 bg-black/35 flex items-center justify-center">' +
                 '<div class="w-10 h-10 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg">' +
                   '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
@@ -753,11 +759,15 @@
                 '<button type="button" onclick="openPreviewModalByWork(' + i + ')" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-colors">' +
                   t('playClip') +
                 '</button>' +
+                (w.videoUrl
+                  ? '<a href="' + w.videoUrl + '" download target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)] text-[var(--color-text)] text-xs font-semibold transition-colors">' + t('downloadVideo') + '</a>'
+                  : '') +
               '</div>' +
             '</div>' +
           '</div>';
       }
       grid.innerHTML = html;
+      if (typeof initCardVideos === 'function') initCardVideos();
     }
 
     // =========================================================================
