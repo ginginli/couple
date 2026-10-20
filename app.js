@@ -1181,7 +1181,7 @@
 
     // 购买单位是积分包：余额不足时高亮“够用的最小包”
     function highlightCreditPack(neededCredits) {
-      var packs = [2000, 6000, 20000];
+      var packs = [2000, 3000, 20000];
       var picked = 0;
       packs.forEach(function (amount) {
         var el = document.getElementById('pack-card-' + amount);
@@ -1208,7 +1208,7 @@
     // 真实收款：填入 Stripe Payment Link 后自动跳转；留空则是演示模式（直接加积分）
     var STRIPE_PAYMENT_LINKS = {
       // '2000':  'https://buy.stripe.com/xxxx_starter',   // $9.90
-      // '6000':  'https://buy.stripe.com/xxxx_popular',   // $26.90  ← 主打
+      // '3000':  'https://buy.stripe.com/xxxx_popular',   // $12.90  ← 主打
       // '20000': 'https://buy.stripe.com/xxxx_pro'        // $99.00  ← 高价锚点
     };
 

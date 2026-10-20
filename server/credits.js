@@ -12,7 +12,7 @@ const store = require('./store');
 // 三个积分包：与页面展示一致
 const PACKS = {
   starter: { credits: 2000, usd: 9.9, label: 'Starter Pack' },
-  popular: { credits: 6000, usd: 26.9, label: 'Couple Viral Pack' },
+  popular: { credits: 3000, usd: 12.9, label: 'Couple Viral Pack' },
   pro: { credits: 20000, usd: 99.0, label: 'Creator Pro Pack' }
 };
 
