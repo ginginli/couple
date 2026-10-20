@@ -737,10 +737,10 @@
             </button>
           </div>
 
-          <p class="text-xs text-zinc-400">点击下方任意分镜可直接跳转到对应时间点：</p>
+          <p class="zc-owner-only hidden text-xs text-zinc-400">点击下方任意分镜可直接跳转到对应时间点：</p>
 
           <!-- Interactive 4-Shot Buttons -->
-          <div class="space-y-2">
+          <div class="zc-owner-only hidden space-y-2">
             <button type="button" onclick="scrubPlayer(0.2)" id="modal-shot-btn-1" class="w-full text-left p-2.5 rounded-xl border border-rose-500/60 bg-rose-500/10 transition-all">
               <div class="flex items-center justify-between text-xs font-bold text-white">
                 <span>Shot 1 (0–2s) · 浓雾走来特写</span>
@@ -773,15 +773,6 @@
               <p class="text-[11px] text-zinc-300 mt-0.5">相撞瞬间同机位切回爆发前金色晴天，两人健康模样扑倒在地相拥大笑。</p>
             </button>
           </div>
-        </div>
-
-        <div class="pt-3 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-2">
-          <button type="button" onclick="copyCurrentPrompt()" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200">
-            复制完整分镜 Prompt
-          </button>
-          <button type="button" onclick="downloadStoryboardJson()" class="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-xs font-bold text-white">
-            下载任务配置与分镜包 (.json)
-          </button>
         </div>
       </div>
 

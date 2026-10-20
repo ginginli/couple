@@ -727,10 +727,10 @@
             </button>
           </div>
 
-          <p class="text-xs text-zinc-400">Click any shot below to jump straight to that timestamp:</p>
+          <p class="zc-owner-only hidden text-xs text-zinc-400">Click any shot below to jump straight to that timestamp:</p>
 
           <!-- Interactive 4-Shot Buttons -->
-          <div class="space-y-2">
+          <div class="zc-owner-only hidden space-y-2">
             <button type="button" onclick="scrubPlayer(0.2)" id="modal-shot-btn-1" class="w-full text-left p-2.5 rounded-xl border border-rose-500/60 bg-rose-500/10 transition-all">
               <div class="flex items-center justify-between text-xs font-bold text-white">
                 <span>Shot 1 (0–2s) · Close-up Emerging from Fog</span>
@@ -763,15 +763,6 @@
               <p class="text-[11px] text-zinc-300 mt-0.5">At impact the same camera cuts back to the golden sunny day before the outbreak; healthy again, they tumble to the ground laughing in an embrace.</p>
             </button>
           </div>
-        </div>
-
-        <div class="pt-3 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-2">
-          <button type="button" onclick="copyCurrentPrompt()" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200">
-            Copy full storyboard prompt
-          </button>
-          <button type="button" onclick="downloadStoryboardJson()" class="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-xs font-bold text-white">
-            Download job config & storyboard (.json)
-          </button>
         </div>
       </div>
 
