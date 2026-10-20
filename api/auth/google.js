@@ -4,6 +4,7 @@
  */
 const auth = require('../../server/auth');
 const credits = require('../../server/credits');
+const billing = require('../../server/billing');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -28,12 +29,15 @@ module.exports = async function handler(req, res) {
   if (!profile) return res.status(401).json({ ok: false, error: 'invalid_google_token' });
 
   const user = await auth.upsertUser(profile);
+  // 此前用这个邮箱付过款但没账号的订单，现在自动入账
+  const claimed = await billing.claimPending(user.email, user.sub);
   const token = auth.signJwt({ sub: user.sub, email: user.email, name: user.name, picture: user.picture });
   auth.setSessionCookie(res, token);
 
   return res.status(200).json({
     ok: true,
     user: { sub: user.sub, email: user.email, name: user.name, picture: user.picture },
-    credits: await credits.balanceUser(user.sub)
+    credits: await credits.balanceUser(user.sub),
+    claimed: claimed && claimed.credits ? claimed.credits : 0
   });
 };

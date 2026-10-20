@@ -26,11 +26,13 @@ module.exports = async function handler(req, res) {
   }
 
   const profile = (await auth.getUser(u.sub)) || u;
+  const claimed = await billing.claimPending(profile.email, u.sub);
   return res.status(200).json({
     ok: true,
     user: { sub: profile.sub, email: profile.email, name: profile.name, picture: profile.picture },
     credits: await credits.balanceUser(u.sub),
     ledger: await credits.ledgerUser(u.sub, 20),
+    claimed: claimed && claimed.credits ? claimed.credits : 0,
     config: { googleClientId: auth.GOOGLE_CLIENT_ID || null, billingEnabled: billing.enabled() }
   });
 };
