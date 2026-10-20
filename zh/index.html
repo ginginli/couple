@@ -160,10 +160,11 @@
               <span class="w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] inline-flex items-center justify-center font-bold">1</span>
               <span data-i18n="uploadSectionTitle">上传两张照片 (顺序决定角色)</span>
             </label>
-            <div class="flex items-center gap-1.5">
-              <button type="button" onclick="fillSamplePhotos('couple')" class="text-[11px] font-medium text-rose-400 hover:underline" data-i18n="fillCoupleSample">填入情侣示例</button>
-              <span class="text-[var(--color-border)]">|</span>
-              <button type="button" onclick="fillSamplePhotos('pet')" class="text-[11px] font-medium text-amber-400 hover:underline" data-i18n="fillPetSample">填入萌宠示例</button>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-[11px] font-medium text-[var(--color-text-muted)]" data-i18n="trySamplesLabel">示例照片：</span>
+              <button type="button" onclick="applyExamplePreset(0)" title="Couple · Ruined city" aria-label="Couple sample" class="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-rose-800 ring-2 ring-rose-500/30 text-white text-sm flex items-center justify-center hover:scale-110 transition-transform">👩</button>
+              <button type="button" onclick="applyExamplePreset(1)" title="Pet dog · Snowy town" aria-label="Pet sample" class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-800 ring-2 ring-amber-500/30 text-white text-sm flex items-center justify-center hover:scale-110 transition-transform">🐕</button>
+              <button type="button" onclick="applyExamplePreset(2)" title="Hug · Empty highway" aria-label="Hug sample" class="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-sky-800 ring-2 ring-sky-500/30 text-white text-sm flex items-center justify-center hover:scale-110 transition-transform">🫂</button>
             </div>
           </div>
 
@@ -364,13 +365,9 @@
             </nav>
           </header>
 
-          <!-- Section 1: What Is -->
-          <section id="sec-what-is" class="space-y-5">
-            <h2 class="text-lg sm:text-xl font-bold tracking-tight" data-i18n="secWhatIsTitle">什么是 AI 僵尸情侣视频生成器？</h2>
-            <article class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6 space-y-3 text-sm sm:text-[15px] leading-relaxed text-[var(--color-text)]/90">
-              <p data-i18n="whatIsP1">AI 僵尸情侣视频生成器是一个把两张普通照片变成竖屏短片的工具。你上传被感染的那个人（或宠物），再上传自己，模型围绕你们拍出四个镜头：从浓雾中走出的特写、你无法开枪的对峙、张开双臂的飞奔，以及切回爆发前晴天的拥抱。</p>
-              <p data-i18n="whatIsP2">它源于九月底短视频平台上流行起来的 AI 僵尸特效，也被称为僵尸爱情故事。传播最快的是两种：伴侣被感染的僵尸情侣视频，以及主人面对被感染猫狗的宠物版。</p>
-            </article>
+          <!-- Use cases: first-screen examples (zooop-style) -->
+          <section id="sec-use-cases" class="space-y-4" aria-label="Use cases">
+            <h2 class="text-lg sm:text-xl font-bold tracking-tight" data-i18n="useCasesTitle">灵感场景</h2>
             <div>
               <div class="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 class="text-base font-bold" data-i18n="whatIsH3">三种常见用法</h3>
@@ -456,6 +453,15 @@
               </div>
             </div>
                       </div>
+          </section>
+
+          <!-- Section 1: What Is -->
+          <section id="sec-what-is" class="space-y-5">
+            <h2 class="text-lg sm:text-xl font-bold tracking-tight" data-i18n="secWhatIsTitle">什么是 AI 僵尸情侣视频生成器？</h2>
+            <article class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6 space-y-3 text-sm sm:text-[15px] leading-relaxed text-[var(--color-text)]/90">
+              <p data-i18n="whatIsP1">AI 僵尸情侣视频生成器是一个把两张普通照片变成竖屏短片的工具。你上传被感染的那个人（或宠物），再上传自己，模型围绕你们拍出四个镜头：从浓雾中走出的特写、你无法开枪的对峙、张开双臂的飞奔，以及切回爆发前晴天的拥抱。</p>
+              <p data-i18n="whatIsP2">它源于九月底短视频平台上流行起来的 AI 僵尸特效，也被称为僵尸爱情故事。传播最快的是两种：伴侣被感染的僵尸情侣视频，以及主人面对被感染猫狗的宠物版。</p>
+            </article>
 </section>
 
           <!-- Section: Core Features & 4-Shot Breakdown -->
