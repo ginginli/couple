@@ -64,12 +64,23 @@ module.exports = async function handler(req, res) {
     });
   }
 
+  // 只开放 720p / 1080p 两档
+  const resolution = params.resolution || '720p';
+  if (!credits.isTier(resolution)) {
+    return res.status(400).json({
+      ok: false,
+      error: 'invalid_resolution',
+      allowed: credits.TIERS,
+      hint: '只提供 720p / 1080p 两档'
+    });
+  }
+
   const input = {
     prompt: prompt,
     imageUrls: imageUrls.slice(0, 2),
     duration: params.duration || 13,
     aspectRatio: params.aspect_ratio || '9:16',
-    resolution: params.resolution || '720p',
+    resolution: resolution,
     audio: params.generate_audio !== false,
     modelKey: params.model === 'bytedance/seedance-v2.5-text-ref' ? 'seedance' : 'auto',
     provider: params.provider || 'auto'

@@ -17,10 +17,19 @@ const PACKS = {
 };
 
 // 服务端定价：前端传什么都不算，以这里为准（防改价）
-const TIER_CREDITS = { '480p': 350, '720p': 600, '1080p': 2100 };
+// 只卖 720p / 1080p 两档：Atlas 上 480p 与 720p 走的是同一个模型（Kling O3 Std 固定 720P），
+// 卖 480p 等于收低价出同样的片子，没有意义
+const TIER_CREDITS = { '720p': 600, '1080p': 2100 };
 
+const TIERS = Object.keys(TIER_CREDITS);
+
+function isTier(res) {
+  return TIER_CREDITS[res] != null;
+}
+
+/** 未知档位返回 null，由调用方直接拒绝（不要静默折算成 720p） */
 function creditsForResolution(res) {
-  return TIER_CREDITS[res] || TIER_CREDITS['720p'];
+  return TIER_CREDITS[res] != null ? TIER_CREDITS[res] : null;
 }
 
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 去掉易混淆字符
@@ -197,6 +206,8 @@ async function markOrder(orderId, record) {
 module.exports = {
   PACKS,
   TIER_CREDITS,
+  TIERS,
+  isTier,
   creditsForResolution,
   issue,
   bySession,
