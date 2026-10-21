@@ -41,6 +41,24 @@ module.exports = async function handler(req, res) {
     } else if (state.state === 'succeeded') {
       const rec = await credits.orderDone('job:' + provider + ':' + id);
       if (rec) balance = await credits.balanceUser(rec.userId);
+      // 真实成本：Atlas 响应里的 price 才是准的，RATES 只是估算。
+      // 带上视频档位与是否有参考视频，方便直接算单价（price / 秒数）
+      try {
+        const cost = adapter.PROVIDERS[state.provider].estimateCost(
+          { duration: (rec && rec.duration) || 13, resolution: rec && rec.resolution },
+          { raw: state.raw }
+        );
+        console.log(JSON.stringify({
+          event: 'job_cost', jobId: id, provider: state.provider,
+          model: cost.model, resolution: rec && rec.resolution,
+          seconds: cost.seconds,
+          reportedUsd: cost.reportedUsd,      // Atlas 实收（校准 RATES 用这个）
+          estimatedUsd: cost.estimatedUsd,    // 我们的估算
+          creditsCharged: rec && rec.cost
+        }));
+      } catch (e) {
+        console.error(JSON.stringify({ event: 'job_cost_failed', jobId: id, error: e.message }));
+      }
     }
 
     return res.status(200).json({
