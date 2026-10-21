@@ -196,6 +196,51 @@ async function listPending() {
   return out;
 }
 
+/** 退款事件名（Creem 版本差异较多，尽量覆盖） */
+const REFUND_EVENTS = [
+  'refund.completed', 'refund.created', 'refund.succeeded',
+  'charge.refunded', 'payment.refunded', 'order.refunded',
+  'checkout.refunded', 'subscription.refunded'
+];
+
+/**
+ * 退款：钱退给客户后必须同步收回已发的积分，否则等于白嫖
+ * 余额已被花掉时扣到 0 为止，差额记 shortfall 供人工跟进
+ */
+async function handleRefunded(event) {
+  const obj = event.object || event.data || event;
+  const orderId = event.id || obj.id || obj.checkout_id || obj.order_id || obj.charge_id || null;
+  const meta = obj.metadata || obj.custom_data || {};
+  const packKey = meta.packKey || packKeyByProductId(obj.product_id || obj.product || (obj.product && obj.product.id));
+  let userId = meta.userId || obj.userId || null;
+
+  if (!userId) {
+    const email = (obj.customer && obj.customer.email) || obj.customer_email || obj.email || null;
+    if (email) userId = await auth.findByEmail(email);
+  }
+
+  const rec = orderId ? await credits.orderDone(orderId) : null;
+  if (rec && rec.refundedCredits) return { ok: true, duplicate: true };
+  const amount = (rec && rec.credits) || (packKey && credits.PACKS[packKey] && credits.PACKS[packKey].credits) || 0;
+
+  if (!userId) return { ok: false, error: 'no_user_found', hint: '无法定位账号，需人工处理' };
+  if (!amount) return { ok: false, error: 'unknown_amount', hint: '无法判断该退多少积分，需人工处理' };
+
+  const balance = await credits.balanceUser(userId);
+  const deduct = Math.min(balance, amount);
+  if (deduct > 0) await credits.spendUser(userId, deduct, 'refund:' + (orderId || 'manual'));
+
+  if (orderId) {
+    await credits.markOrder(orderId, Object.assign({}, rec || {}, {
+      orderId: orderId, userId: userId, refundedCredits: true,
+      refundedAt: new Date().toISOString(), deducted: deduct,
+      shortfall: amount - deduct
+    }));
+  }
+  console.log(JSON.stringify({ event: 'refund_processed', userId: userId, deducted: deduct, shortfall: amount - deduct, orderId: orderId }));
+  return { ok: true, userId: userId, deducted: deduct, shortfall: amount - deduct, balance: balance - deduct };
+}
+
 const COMPLETED_EVENTS = ['checkout.completed', 'order.completed', 'order.paid', 'subscription.active'];
 
 module.exports = {
@@ -205,6 +250,8 @@ module.exports = {
   parkClaim,
   claimPending,
   listPending,
+  handleRefunded,
+  REFUND_EVENTS,
   PRODUCTS,
   createCheckout,
   verifySignature,

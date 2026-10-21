@@ -35,6 +35,20 @@ module.exports = async function handler(req, res) {
   }
 
   const body = (req.body && typeof req.body === 'object') ? req.body : {};
+
+  // 人工退款：收回已发积分（余额不够就扣到 0，差额报 shortfall）
+  if (body.action === 'refund') {
+    const amt = Number(body.credits);
+    if (!amt || amt <= 0) return res.status(400).json({ ok: false, error: 'credits must be > 0' });
+    let rsub = body.sub || (body.email ? await auth.findByEmail(body.email) : null);
+    if (!rsub) return res.status(404).json({ ok: false, error: 'user_not_found' });
+    const bal = await credits.balanceUser(rsub);
+    const deduct = Math.min(bal, amt);
+    if (deduct > 0) await credits.spendUser(rsub, deduct, 'admin_refund:' + (body.orderId || ''));
+    console.log(JSON.stringify({ event: 'admin_refund', sub: rsub, requested: amt, deducted: deduct, shortfall: amt - deduct }));
+    return res.status(200).json({ ok: true, sub: rsub, deducted: deduct, shortfall: amt - deduct, balance: bal - deduct });
+  }
+
   const creditsNum = Number(body.credits);
   if (!creditsNum || creditsNum <= 0) return res.status(400).json({ ok: false, error: 'credits must be > 0' });
 

@@ -47,13 +47,14 @@ module.exports = async function handler(req, res) {
   }
 
   const type = event.eventType || event.type || event.event || '';
-  if (billing.COMPLETED_EVENTS.indexOf(type) === -1) {
+  const isRefund = billing.REFUND_EVENTS.indexOf(type) !== -1;
+  if (billing.COMPLETED_EVENTS.indexOf(type) === -1 && !isRefund) {
     return res.status(200).json({ ok: true, ignored: type });
   }
 
   try {
-    const out = await billing.handleCompleted(event);
-    console.log(JSON.stringify({ event: 'webhook_grant', type: type, result: out }));
+    const out = isRefund ? await billing.handleRefunded(event) : await billing.handleCompleted(event);
+    console.log(JSON.stringify({ event: isRefund ? 'webhook_refund' : 'webhook_grant', type: type, result: out }));
     return res.status(200).json({ ok: true, result: out });
   } catch (e) {
     console.error(JSON.stringify({ event: 'webhook_grant_error', error: e.message }));

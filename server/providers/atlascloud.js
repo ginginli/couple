@@ -1,20 +1,20 @@
 /**
  * Atlas Cloud provider adapter (cheap channel / fallback)
  *
- * OpenAI 兼容网关：一个 Key 调图像、视频、语音。
- * 提交与查询路径各版本可能不同，可用环境变量覆盖：
- *   ATLAS_BASE         默认 https://api.atlascloud.ai/v1
- *   ATLAS_SUBMIT_PATH  默认 /video/generations
- *   ATLAS_STATUS_PATH  默认 /generations      (最终 GET {base}{statusPath}/{id})
- *
- * 先跑 `npm run selftest -- --provider atlas` 打印原始响应，再按真实返回校准 parse* 方法。
+ * API 文档: https://www.atlascloud.ai/docs
+ * 端点: https://api.atlascloud.ai/api/v1
+ * 
+ * 可用环境变量覆盖：
+ *   ATLAS_BASE         默认 https://api.atlascloud.ai/api/v1
+ *   ATLAS_SUBMIT_PATH  默认 /model/generateVideo
+ *   ATLAS_STATUS_PATH  默认 /model/prediction
  */
 
 const http = require('../http');
 
-const BASE = process.env.ATLAS_BASE || 'https://api.atlascloud.ai/v1';
-const SUBMIT_PATH = process.env.ATLAS_SUBMIT_PATH || '/video/generations';
-const STATUS_PATH = process.env.ATLAS_STATUS_PATH || '/generations';
+const BASE = process.env.ATLAS_BASE || 'https://api.atlascloud.ai/api/v1';
+const SUBMIT_PATH = process.env.ATLAS_SUBMIT_PATH || '/model/generateVideo';
+const STATUS_PATH = process.env.ATLAS_STATUS_PATH || '/model/prediction';
 
 const MODELS = {
   'kling-o3-r2v': process.env.ATLAS_MODEL_KLING_R2V || 'kwaivgi/kling-video-o3-std/reference-to-video',
@@ -49,18 +49,20 @@ function buildRequest(input) {
   const body = {
     model: pickModel(modelKey),
     prompt: input.prompt,
-    images: input.imageUrls || [],
+    image_url: input.imageUrls && input.imageUrls[0] ? input.imageUrls[0] : null,
     duration: clampDuration(input.duration),
     aspect_ratio: input.aspectRatio || '9:16',
-    generate_audio: input.audio !== false
+    enable_audio: input.audio !== false
   };
-  if (modelKey === 'kling-o3-r2v') body.multi_shot = true;
+  // 移除空值
+  if (!body.image_url) delete body.image_url;
   return { url: BASE + SUBMIT_PATH, headers: headers(), body: body, modelKey: modelKey };
 }
 
 function parseSubmit(json, ctx) {
-  const job = json.data || json;
-  const jobId = job.id || job.job_id || job.request_id || job.task_id;
+  // Atlas wraps response in {"code":200,"message":"","data":{...}}
+  const data = json.data || json;
+  const jobId = data.id;
   if (!jobId) {
     throw new Error('atlas submit did not return an id: ' + JSON.stringify(json).slice(0, 300));
   }
@@ -82,28 +84,44 @@ function normalizeState(s) {
 }
 
 function parseStatus(json) {
-  const job = json.data || json;
-  return { state: normalizeState(job.status || job.state), raw: json };
+  const data = json.data || json;
+  // Atlas states: processing, completed, failed
+  let state = 'running';
+  if (data.status === 'completed') state = 'succeeded';
+  else if (data.status === 'failed' || data.error) state = 'failed';
+  else if (data.status === 'processing' || data.status === 'queued') state = 'queued';
+  
+  return { state, raw: json };
 }
 
 function parseResult(json) {
-  const job = json.data || json;
-  const out = job.output || job.result || job;
-  const url =
-    out.video_url ||
-    out.video ||
-    (out.videos && out.videos[0] && (out.videos[0].url || out.videos[0].video_url)) ||
-    (job.video && job.video.url) ||
-    null;
-  return { videoUrl: url, raw: json };
+  const data = json.data || json;
+  // Atlas returns video URL in outputs array or urls.get
+  let videoUrl = null;
+  
+  // Check outputs array (Atlas format)
+  if (data.outputs && Array.isArray(data.outputs) && data.outputs.length > 0) {
+    videoUrl = data.outputs.find(o => typeof o === 'string' && o.endsWith('.mp4')) || data.outputs[0];
+  }
+  
+  // Check urls.get
+  if (!videoUrl && data.urls && data.urls.get) {
+    // Need to fetch from status URL again for actual video
+    videoUrl = null;
+  }
+  
+  return { videoUrl, raw: json };
 }
 
 function estimateCost(input, result) {
   const rates = RATES[input.modelKey] || RATES['kling-o3-r2v'];
   const perSec = rates[input.resolution] || rates['720p'];
   const seconds = clampDuration(input.duration);
-  const reported =
-    result && result.raw && (result.raw.cost || (result.raw.usage && result.raw.usage.cost));
+  
+  // Try to get actual price from Atlas response
+  const data = result && result.raw && result.raw.data;
+  const reportedUsd = data && data.price ? parseFloat(data.price) : null;
+  
   return {
     provider: id,
     modelKey: input.modelKey,
@@ -111,7 +129,7 @@ function estimateCost(input, result) {
     seconds: seconds,
     ratePerSecond: perSec,
     estimatedUsd: Number((perSec * seconds).toFixed(4)),
-    reportedUsd: typeof reported === 'number' ? reported : null
+    reportedUsd: reportedUsd
   };
 }
 
@@ -125,11 +143,15 @@ async function submit(input) {
 async function status(ref) {
   const json = await http.get(ref.statusUrl, headers(), 15000, 1);
   const parsed = parseStatus(json);
-  if (parsed.state === 'succeeded' && !parsed.videoUrl) {
-    // Atlas 多数直接在同一响应里返回结果
-    const res = parseResult(json);
-    parsed.videoUrl = res.videoUrl;
+  
+  // If completed, extract video URL from same response
+  if (parsed.state === 'succeeded') {
+    const data = json.data || json;
+    if (data.outputs && Array.isArray(data.outputs)) {
+      parsed.videoUrl = data.outputs.find(o => typeof o === 'string' && o.endsWith('.mp4')) || data.outputs[0];
+    }
   }
+  
   return parsed;
 }
 
