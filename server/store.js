@@ -57,6 +57,23 @@ async function run(args) {
   return hasRest() ? cmd(args) : memCmd(args);
 }
 
+/**
+ * 按 pattern 列出 key（Upstash SCAN）。仅 KV 模式可用，内存模式返回 []。
+ * 运维自测用，生产代码不依赖它。
+ */
+async function scan(match, count) {
+  if (!hasRest()) return [];
+  const out = [];
+  let cursor = '0';
+  do {
+    const r = await cmd(['SCAN', cursor, 'MATCH', match, 'COUNT', String(count || 200)]);
+    if (!Array.isArray(r) || r.length < 2) break;
+    cursor = String(r[0]);
+    (r[1] || []).forEach(function (k) { out.push(k); });
+  } while (cursor !== '0' && out.length < 5000);
+  return out;
+}
+
 /** 读一个 JSON 值（不存在返回 null） */
 async function getJson(key) {
   const raw = await run(['GET', key]);
@@ -102,6 +119,7 @@ async function del(key) {
 }
 
 module.exports = {
+  scan,
   hasRest,
   getJson,
   setJson,
