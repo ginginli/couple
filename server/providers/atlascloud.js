@@ -44,19 +44,27 @@ function clampDuration(d) {
   return Math.max(3, Math.min(15, Math.round(n)));
 }
 
+/** Atlas 用 <<<image_1>>> / <<<image_2>>> 指代参考图，fal 用 @Image1 / @Image2 */
+function toAtlasPrompt(prompt) {
+  return String(prompt || '')
+    .replace(/@Image1/g, '<<<image_1>>>')
+    .replace(/@Image2/g, '<<<image_2>>>');
+}
+
 function buildRequest(input) {
   const modelKey = input.modelKey || 'kling-o3-r2v';
+  const images = (input.imageUrls || []).filter(Boolean).slice(0, 7);
   const body = {
     model: pickModel(modelKey),
-    prompt: input.prompt,
-    image_url: input.imageUrls && input.imageUrls[0] ? input.imageUrls[0] : null,
+    prompt: toAtlasPrompt(input.prompt),
+    images: images,                       // 参考图数组（无参考视频时最多 7 张）
     duration: clampDuration(input.duration),
-    aspect_ratio: input.aspectRatio || '9:16',
-    enable_audio: input.audio !== false
+    aspect_ratio: ['16:9', '9:16', '1:1'].indexOf(input.aspectRatio) !== -1 ? input.aspectRatio : '9:16',
+    sound: input.audio !== false,         // Atlas 的音频字段是 sound，不是 enable_audio
+    multi_shot: true,
+    shot_type: 'intelligence'             // 由模型按 prompt 自动分镜（我们的 prompt 已写好四镜）
   };
-  // 移除空值
-  if (!body.image_url) delete body.image_url;
-  return { url: BASE + SUBMIT_PATH, headers: headers(), body: body, modelKey: modelKey };
+  return { url: BASE + SUBMIT_PATH, headers: headers(), body: body, model: body.model, modelKey: modelKey };
 }
 
 function parseSubmit(json, ctx) {
@@ -126,6 +134,9 @@ function estimateCost(input, result) {
     provider: id,
     modelKey: input.modelKey,
     resolution: input.resolution,
+    // 注意：Atlas 的 Kling O3 Standard 输出固定 720P，接口不接受 resolution 字段，
+    // 因此站点卖的 480p/1080p 档在 Atlas 上不会改变实际画质
+    deliveredResolution: '720p',
     seconds: seconds,
     ratePerSecond: perSec,
     estimatedUsd: Number((perSec * seconds).toFixed(4)),

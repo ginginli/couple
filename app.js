@@ -572,7 +572,23 @@
       }, 180);
     }
 
+    // 真实生成必须有两张已上传照片（服务端同样校验，这里只是提前拦住）
+    function ensureTwoUploadedPhotos() {
+      var ok = !!(appState.slot1 && appState.slot1.imageUrl) && !!(appState.slot2 && appState.slot2.imageUrl);
+      if (!ok) {
+        showToast(appState.lang === 'zh'
+          ? '请先上传两张照片（感染者 + 幸存者）再生成'
+          : 'Please upload both photos (infected + survivor) first', 'error');
+      }
+      return ok;
+    }
+
     function submitRealGeneration(cost) {
+      if (!ensureTwoUploadedPhotos()) {
+        refundCredits(cost);
+        hideProgressCard();
+        return;
+      }
       var statusTitle = document.getElementById('gen-status-title');
       if (statusTitle) {
         statusTitle.textContent = appState.lang === 'zh' ? '正在上传照片…' : 'Uploading photos…';
@@ -1547,10 +1563,7 @@
           resolution: appState.resolution,
           generate_audio: true,
           setting: WORLD_MAP[appState.world].value,
-          image_urls: [
-            slotImageUrl(appState.slot1, "https://zombie-couple.xyz/uploads/photo1_infected.jpg"),
-            slotImageUrl(appState.slot2, "https://zombie-couple.xyz/uploads/photo2_survivor.jpg")
-          ]
+          image_urls: [slotImageUrl(appState.slot1, ""), slotImageUrl(appState.slot2, "")]
         }
       };
     }

@@ -24,17 +24,16 @@ const atlas = require('./providers/atlascloud');
 
 const PROVIDERS = { fal: fal, atlas: atlas };
 
-const DEFAULT_CHAIN = (process.env.VIDEO_PROVIDER_CHAIN || 'fal,atlas')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
+/**
+ * 单一 provider，不做降级：
+ * 降级通道会静默改变成片（例：只收一张图 → 第二个人不出现），宁可报错也不给错结果。
+ * 用 VIDEO_PROVIDER 显式指定（fal / atlas）；没指定时按“配了哪个 key 就用哪个”。
+ */
+const PROVIDER = process.env.VIDEO_PROVIDER || (process.env.ATLAS_KEY ? 'atlas' : 'fal');
 
-function resolveChain(preferred) {
-  if (preferred && preferred !== 'auto' && PROVIDERS[preferred]) {
-    const rest = DEFAULT_CHAIN.filter((p) => p !== preferred);
-    return [preferred].concat(rest);
-  }
-  return DEFAULT_CHAIN.slice();
+function resolveProvider(preferred) {
+  if (preferred && preferred !== 'auto') return preferred;
+  return PROVIDER;
 }
 
 function normalizeInput(input) {
@@ -59,36 +58,28 @@ function pickModelKey(input) {
 async function submit(input) {
   const norm = normalizeInput(input);
   norm.modelKey = pickModelKey(norm);
-  const chain = resolveChain(norm.provider);
-  const errors = [];
+  const name = resolveProvider(norm.provider);
+  const provider = PROVIDERS[name];
 
-  for (let i = 0; i < chain.length; i++) {
-    const name = chain[i];
-    const provider = PROVIDERS[name];
-    if (!provider) continue;
-    try {
-      const ref = await provider.submit(norm);
-      return {
-        ok: true,
-        provider: name,
-        providerJobId: ref.providerJobId,
-        model: ref.model,
-        modelKey: norm.modelKey,
-        statusUrl: ref.statusUrl,
-        state: 'queued',
-        videoUrl: null,
-        cost: provider.estimateCost(norm, null),
-        attempts: chain.slice(0, i + 1)
-      };
-    } catch (e) {
-      errors.push({ provider: name, message: e.message, body: e.body || null });
-      console.error(
-        JSON.stringify({ event: 'provider_submit_failed', provider: name, error: e.message })
-      );
-    }
+  if (!provider) return { ok: false, error: 'unknown_provider', provider: name };
+
+  try {
+    const ref = await provider.submit(norm);
+    return {
+      ok: true,
+      provider: name,
+      providerJobId: ref.providerJobId,
+      model: ref.model,
+      modelKey: norm.modelKey,
+      statusUrl: ref.statusUrl,
+      state: 'queued',
+      videoUrl: null,
+      cost: provider.estimateCost(norm, null)
+    };
+  } catch (e) {
+    console.error(JSON.stringify({ event: 'provider_submit_failed', provider: name, error: e.message }));
+    return { ok: false, error: e.message, provider: name, body: e.body || null };
   }
-
-  return { ok: false, error: 'all providers failed', details: errors };
 }
 
 async function poll(ref) {
@@ -119,7 +110,8 @@ async function poll(ref) {
 
 module.exports = {
   PROVIDERS,
-  DEFAULT_CHAIN,
+  PROVIDER,
+  DEFAULT_CHAIN: [PROVIDER],
   normalizeInput,
   pickModelKey,
   submit,

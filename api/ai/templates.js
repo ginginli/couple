@@ -52,9 +52,21 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'could not build prompt' });
   }
 
+  // 必须两张真实上传的图片：少一张直接 400，不扣积分、不请求 provider
+  var imageUrls = (params.image_urls || []).filter(function (u) {
+    return typeof u === 'string' && /^https?:\/\//i.test(u.trim());
+  });
+  if (imageUrls.length < 2) {
+    return res.status(400).json({
+      ok: false,
+      error: 'two_uploaded_images_required',
+      hint: '需要先上传两张照片（公网可访问 URL）才能生成'
+    });
+  }
+
   const input = {
     prompt: prompt,
-    imageUrls: params.image_urls || [],
+    imageUrls: imageUrls.slice(0, 2),
     duration: params.duration || 13,
     aspectRatio: params.aspect_ratio || '9:16',
     resolution: params.resolution || '720p',
