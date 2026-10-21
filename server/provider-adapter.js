@@ -49,15 +49,18 @@ function normalizeInput(input) {
   };
 }
 
-/** 按分辨率挑模型：480p 走 Seedance（便宜），720p/1080p 走 Kling O3（多参考图 + 身份一致） */
-function pickModelKey(input) {
+/**
+ * 挑模型：Atlas 由 provider 内部按档位选（Kling Std/Pro），fal 侧 480p 走便宜的 Seedance
+ */
+function pickModelKey(input, providerName) {
   if (input.modelKey && input.modelKey !== 'auto') return input.modelKey;
+  if (providerName === 'atlas') return 'kling-o3-r2v';
   return input.resolution === '480p' ? 'seedance' : 'kling-o3-r2v';
 }
 
 async function submit(input) {
   const norm = normalizeInput(input);
-  norm.modelKey = pickModelKey(norm);
+  norm.modelKey = pickModelKey(norm, name);
   const name = resolveProvider(norm.provider);
   const provider = PROVIDERS[name];
 

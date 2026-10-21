@@ -17,13 +17,29 @@ const SUBMIT_PATH = process.env.ATLAS_SUBMIT_PATH || '/model/generateVideo';
 const STATUS_PATH = process.env.ATLAS_STATUS_PATH || '/model/prediction';
 
 const MODELS = {
-  'kling-o3-r2v': process.env.ATLAS_MODEL_KLING_R2V || 'kwaivgi/kling-video-o3-std/reference-to-video',
-  seedance: process.env.ATLAS_MODEL_SEEDANCE || 'bytedance/seedance-v2.5-text-ref'
+  'kling-o3-r2v': process.env.ATLAS_MODEL_KLING_R2V || 'kwaivgi/kling-video-o3-std/reference-to-video', // 720P 固定
+  'kling-o3-pro': process.env.ATLAS_MODEL_KLING_PRO || 'kwaivgi/kling-video-o3-pro/reference-to-video', // 1080P 固定
+  seedance: process.env.ATLAS_MODEL_SEEDANCE || 'bytedance/seedance-v2.5-text-ref',
+  grok: process.env.ATLAS_MODEL_GROK || 'xai/grok-imagine-video/reference-to-video'                     // 真 480p/720p，但 ≤10s 且无音频
+};
+
+/**
+ * 站点档位 → 模型。
+ * Atlas 上 Kling O3 的输出分辨率是写死的（Std=720P / Pro=1080P），接口没有 resolution 参数，
+ * 所以「不同档位不同画质」只能靠换模型实现。可用环境变量逐档覆盖。
+ */
+const RES_MODEL = {
+  '480p': process.env.ATLAS_MODEL_480P || MODELS['kling-o3-r2v'],
+  '720p': process.env.ATLAS_MODEL_720P || MODELS['kling-o3-r2v'],
+  '1080p': process.env.ATLAS_MODEL_1080P || MODELS['kling-o3-pro']
 };
 
 // USD / second —— 列表价，同样需要实测校准
 const RATES = {
-  'kling-o3-r2v': { '480p': 0.04, '720p': 0.07, '1080p': 0.12 },
+  // 480p/720p 走的是同一个模型（Std 固定 720P），真实成本相同，别按档位给不同单价
+  'kling-o3-r2v': { '480p': 0.07, '720p': 0.07, '1080p': 0.12 },
+  'kling-o3-pro': { '480p': 0.14, '720p': 0.14, '1080p': 0.14 },
+  grok: { '480p': 0.05, '720p': 0.05, '1080p': 0.05 },
   seedance: { '480p': 0.06, '720p': 0.134, '1080p': 0.25 }
 };
 
@@ -39,32 +55,65 @@ function pickModel(modelKey) {
   return MODELS[modelKey] || MODELS['kling-o3-r2v'];
 }
 
-function clampDuration(d) {
+function clampDuration(d, max) {
   const n = Number(d) || 13;
-  return Math.max(3, Math.min(15, Math.round(n)));
+  return Math.max(3, Math.min(max || 15, Math.round(n)));
 }
 
-/** Atlas 用 <<<image_1>>> / <<<image_2>>> 指代参考图，fal 用 @Image1 / @Image2 */
+/** Atlas(Kling) 用 <<<image_1>>> / <<<image_2>>> 指代参考图，fal 用 @Image1 / @Image2 */
 function toAtlasPrompt(prompt) {
   return String(prompt || '')
     .replace(/@Image1/g, '<<<image_1>>>')
     .replace(/@Image2/g, '<<<image_2>>>');
 }
 
+/** Grok Imagine 用 <IMAGE_1> / <IMAGE_2> */
+function toGrokPrompt(prompt) {
+  return String(prompt || '')
+    .replace(/@Image1/g, '<IMAGE_1>')
+    .replace(/@Image2/g, '<IMAGE_2>');
+}
+
+function familyOf(model) {
+  return /grok/i.test(model) ? 'grok' : 'kling';
+}
+
+/** 按档位选模型（可用 ATLAS_MODEL_480P / _720P / _1080P 覆盖） */
+function pickModelForResolution(res) {
+  return RES_MODEL[res] || MODELS['kling-o3-r2v'];
+}
+
 function buildRequest(input) {
   const modelKey = input.modelKey || 'kling-o3-r2v';
   const images = (input.imageUrls || []).filter(Boolean).slice(0, 7);
-  const body = {
-    model: pickModel(modelKey),
-    prompt: toAtlasPrompt(input.prompt),
-    images: images,                       // 参考图数组（无参考视频时最多 7 张）
-    duration: clampDuration(input.duration),
-    aspect_ratio: ['16:9', '9:16', '1:1'].indexOf(input.aspectRatio) !== -1 ? input.aspectRatio : '9:16',
-    sound: input.audio !== false,         // Atlas 的音频字段是 sound，不是 enable_audio
-    multi_shot: true,
-    shot_type: 'intelligence'             // 由模型按 prompt 自动分镜（我们的 prompt 已写好四镜）
-  };
-  return { url: BASE + SUBMIT_PATH, headers: headers(), body: body, model: body.model, modelKey: modelKey };
+  const model = pickModelForResolution(input.resolution);
+  const family = familyOf(model);
+  const ar = input.aspectRatio || '9:16';
+
+  let body;
+  if (family === 'grok') {
+    // Grok：字段名与 Kling 不同（image_urls / resolution），最长 10 秒，不生成音频
+    body = {
+      model: model,
+      prompt: toGrokPrompt(input.prompt),
+      image_urls: images,
+      duration: clampDuration(input.duration, 10),
+      resolution: input.resolution === '480p' ? '480p' : '720p',
+      aspect_ratio: ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3'].indexOf(ar) !== -1 ? ar : '9:16'
+    };
+  } else {
+    body = {
+      model: model,
+      prompt: toAtlasPrompt(input.prompt),
+      images: images,                       // 参考图数组（无参考视频时最多 7 张）
+      duration: clampDuration(input.duration, 15),
+      aspect_ratio: ['16:9', '9:16', '1:1'].indexOf(ar) !== -1 ? ar : '9:16',
+      sound: input.audio !== false,         // Atlas 的音频字段是 sound，不是 enable_audio
+      multi_shot: true,
+      shot_type: 'intelligence'             // 由模型按 prompt 自动分镜（我们的 prompt 已写好四镜）
+    };
+  }
+  return { url: BASE + SUBMIT_PATH, headers: headers(), body: body, model: model, modelKey: modelKey };
 }
 
 function parseSubmit(json, ctx) {
@@ -122,7 +171,9 @@ function parseResult(json) {
 }
 
 function estimateCost(input, result) {
-  const rates = RATES[input.modelKey] || RATES['kling-o3-r2v'];
+  const model = pickModelForResolution(input.resolution);
+  const key = familyOf(model) === 'grok' ? 'grok' : (/o3-pro/.test(model) ? 'kling-o3-pro' : 'kling-o3-r2v');
+  const rates = RATES[key] || RATES['kling-o3-r2v'];
   const perSec = rates[input.resolution] || rates['720p'];
   const seconds = clampDuration(input.duration);
   
@@ -134,9 +185,11 @@ function estimateCost(input, result) {
     provider: id,
     modelKey: input.modelKey,
     resolution: input.resolution,
-    // 注意：Atlas 的 Kling O3 Standard 输出固定 720P，接口不接受 resolution 字段，
-    // 因此站点卖的 480p/1080p 档在 Atlas 上不会改变实际画质
-    deliveredResolution: '720p',
+    model: model,
+    // Kling O3 Std 固定 720P / Pro 固定 1080P（接口无 resolution 参数）；Grok 才真的按参数出
+    deliveredResolution: familyOf(model) === 'grok'
+      ? (input.resolution === '480p' ? '480p' : '720p')
+      : (/o3-pro/.test(model) ? '1080p' : '720p'),
     seconds: seconds,
     ratePerSecond: perSec,
     estimatedUsd: Number((perSec * seconds).toFixed(4)),
@@ -174,7 +227,9 @@ async function result(ref) {
 module.exports = {
   id,
   MODELS,
+  RES_MODEL,
   RATES,
+  pickModelForResolution,
   submit,
   status,
   result,
