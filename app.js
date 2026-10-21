@@ -6,6 +6,8 @@
     // =========================================================================
     var UI_TEXT = {
       en: {
+        worksEmptyTitle: 'No works yet',
+        worksEmptyHint: 'Upload two photos and pick a world — your first 13s clip will show up here.',
         workTitleDemo: 'Ruined city · Zombie couple reunion (official example)',
         worldCity: 'Ruined city',
         rolePartner: 'Partner (@Image1)',
@@ -48,6 +50,8 @@
         jsonDownloaded: '📦 Storyboard config JSON downloaded'
       },
       zh: {
+        worksEmptyTitle: '还没有作品',
+        worksEmptyHint: '上传两张照片、选好场景，你生成的第一条 13 秒短片会出现在这里。',
         workTitleDemo: '废墟城市 · 僵尸情侣重逢 (官方示例)',
         worldCity: '废墟城市',
         rolePartner: '伴侣 (@Image1)',
@@ -129,21 +133,8 @@
         lastBeatTime: -1,
         pianoPlayed: false
       },
-      works: [
-        {
-          id: 'demo-work-1',
-          title: t('workTitleDemo'),
-          worldKey: 'city',
-          worldLabel: t('worldCity'),
-          resolution: '720p',
-          creditsCost: 600,
-          role1: t('rolePartner'),
-          role2: t('roleSurvivor'),
-          coverSrc: ASSET_BASE + 'scene-ruined-city.jpg',
-          videoUrl: ASSET_BASE + 'videos/scene-ruined-city.mp4',
-          createdAt: t('createdJustNow')
-        }
-      ]
+      // 「我的作品」只放用户真实生成的内容；示例视频在 Tutorial & Examples 标签页里
+      works: []
     };
 
     var WORLD_MAP = {
@@ -786,6 +777,13 @@
       if (!grid) return;
 
       var html = '';
+      if (appState.works.length === 0) {
+        html =
+          '<div class="rounded-2xl border border-dashed border-[var(--color-border)] p-8 text-center">' +
+            '<p class="text-sm font-bold text-[var(--color-text)]">' + t('worksEmptyTitle') + '</p>' +
+            '<p class="mt-1 text-xs text-[var(--color-text-muted)]">' + t('worksEmptyHint') + '</p>' +
+          '</div>';
+      }
       for (var i = 0; i < appState.works.length; i++) {
         var w = appState.works[i];
         html +=
@@ -915,6 +913,7 @@
 
     function openPreviewModalByWork(workIndex) {
       var w = appState.works[workIndex] || appState.works[0];
+      if (!w) return;
       document.getElementById('player-main-img').src = w.coverSrc;
       document.getElementById('player-modal-title').textContent = w.title;
       document.getElementById('player-role1-name').textContent = w.role1;
