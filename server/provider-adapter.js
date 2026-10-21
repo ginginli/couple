@@ -80,8 +80,12 @@ async function submit(input) {
       cost: provider.estimateCost(norm, null)
     };
   } catch (e) {
-    console.error(JSON.stringify({ event: 'provider_submit_failed', provider: name, error: e.message }));
-    return { ok: false, error: e.message, provider: name, body: e.body || null };
+    // 必须带上 body：只记 e.message 的话线上看到的只是 "HTTP 400 from ..."，根本查不出原因
+    console.error(JSON.stringify({
+      event: 'provider_submit_failed', provider: name,
+      error: e.message, status: e.status || null, body: (e.body || '').toString().slice(0, 800)
+    }));
+    return { ok: false, error: e.message, status: e.status || null, provider: name, body: e.body || null };
   }
 }
 

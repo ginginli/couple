@@ -97,7 +97,16 @@ module.exports = async function handler(req, res) {
     const job = await adapter.submit(input);
     if (!job.ok) {
       await credits.refundUser(user.sub, cost, 'submit_failed');
-      return res.status(502).json({ ok: false, error: job.error, details: job.details, refunded: cost });
+      console.error(JSON.stringify({
+        event: 'submit_failed', provider: job.provider, error: job.error,
+        status: job.status || null, body: (job.body || '').toString().slice(0, 800)
+      }));
+      return res.status(502).json({
+        ok: false, error: job.error, provider: job.provider,
+        providerStatus: job.status || null,
+        providerBody: (job.body || '').toString().slice(0, 800),
+        refunded: cost
+      });
     }
 
     // 记录任务归属，供失败时退款（/api/ai/status）
