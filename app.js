@@ -462,8 +462,11 @@
     // 真实后端开关：Vercel 上配置好 FAL_KEY / ATLAS_KEY / INTERNAL_SECRET 后改成 true
     // （未配置密钥时保持 false，线上会以演示模式运行，不会给用户报后端错误）
     var BACKEND = {
-      enabled: false,
+      // 必须为 true：false 时 startZombieGeneration 直接走 runDemoGeneration()，
+      // 只放个假进度条、造一张没有 videoUrl 的卡片，真实请求根本不会发出
+      enabled: true,
       pollIntervalMs: 5000,
+      // Atlas 实测 13 秒片约 220 秒出片，超时给足余量
       maxWaitMs: 8 * 60 * 1000
     };
 
@@ -708,7 +711,7 @@
             finishRealGeneration(job, s, cost);
             return;
           }
-          if (s && (s.state === 'failed') || Date.now() - started > BACKEND.maxWaitMs) {
+          if ((s && (s.state === 'failed' || s.state === 'canceled')) || Date.now() - started > BACKEND.maxWaitMs) {
             failRealGeneration(cost);
             return;
           }
