@@ -46,8 +46,18 @@ const RATES = {
 const id = 'atlas';
 
 function headers() {
-  const key = process.env.ATLAS_KEY;
+  let key = process.env.ATLAS_KEY;
   if (!key) throw new Error('ATLAS_KEY is not set');
+  // 复制粘贴常带换行/空格；HTTP header 只接受可打印 ASCII，非 ASCII 会抛
+  // "Cannot convert argument to a ByteString"（极难排查），这里提前拦住并报清楚
+  key = String(key).replace(/\s+/g, '');
+  const bad = key.match(/[^\x20-\x7E]/g);
+  if (bad) {
+    throw new Error(
+      'ATLAS_KEY contains non-ASCII characters: ' + JSON.stringify(bad.slice(0, 5).join('')) +
+      ' (位置约第 ' + key.indexOf(bad[0]) + ' 位) —— 请重新复制，不要带上中文/全角字符'
+    );
+  }
   return { Authorization: 'Bearer ' + key };
 }
 
