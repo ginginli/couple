@@ -141,20 +141,6 @@ function buildRequest(input) {
   return { url: BASE + SUBMIT_PATH, headers: headers(), body: body, model: model, modelKey: modelKey };
 }
 
-/**
- * 去掉参考视频相关的两句（场景锁定 + 音频沿用原声），退回「纯参考图 + 原生音频」。
- * 只在参考视频被 Atlas 拒绝（例如短片尺寸不合 700-4553px 的要求）时才用，
- * 保证降级后 prompt 里不会留下指不到任何东西的 <<<video_1>>>。
- */
-function stripVideoRef(prompt) {
-  return String(prompt || '')
-    .replace(/LOCATION AND CAMERA:[^\n]*\n\n/g, '')
-    .replace(
-      /Audio: the natural ambient sound of the reference clip[^\n]*/g,
-      'Audio: a low tense drone and a heartbeat in shots 1 to 3, switching at the cut to a soft, warm piano melody; no dialogue. Photorealistic, film grain, cinematic lighting. The gun is never fired. No blood, no gore, no wounds, no kissing, no text, no logos.'
-    );
-}
-
 function logSubmit(req) {
   console.log(JSON.stringify({
     event: 'provider_submit_request', provider: id, model: req.body.model,
@@ -252,30 +238,31 @@ function estimateCost(input, result) {
 }
 
 async function submit(input) {
-  let req = buildRequest(input);
+  const req = buildRequest(input);
   // 提交前留痕：出片跑偏时能立刻对照「当时发出去的到底是什么」
   logSubmit(req);
   let json;
   try {
     json = await http.post(req.url, req.headers, req.body, 30000, 1);
   } catch (e) {
-    // 参考视频被拒（短片尺寸/规格不合要求时 Atlas 会回 400）→ 去掉参考视频重投一次。
-    // 宁可场景一致性打折，也不让整单生成失败：用户此时已经被预扣积分了。
-    if (req.body.video && e.status === 400) {
-      console.warn(JSON.stringify({
-        event: 'ref_video_rejected_fallback', provider: id, model: req.body.model,
-        video: req.body.video, status: e.status,
+    // 参考视频是场景一致性的唯一来源。Atlas 一旦拒收（例如短片尺寸不合
+    // 700-4553px 的要求），直接让整单失败，绝不退回「不带参考视频继续生成」：
+    // 那样产出的成片和示例必然不是一个世界，等于白扣用户积分。
+    // 上层 /api/ai/templates 收到失败会把预扣的积分原路退回。
+    if (req.body.video) {
+      console.error(JSON.stringify({
+        event: 'ref_video_rejected', provider: id, model: req.body.model,
+        video: req.body.video, status: e.status || null,
         body: String(e.body || '').slice(0, 300)
       }));
-      req = buildRequest(Object.assign({}, input, {
-        refVideoUrl: null,
-        prompt: stripVideoRef(input.prompt)
-      }));
-      logSubmit(req);
-      json = await http.post(req.url, req.headers, req.body, 30000, 1);
-    } else {
-      throw e;
+      const err = new Error(
+        'reference video rejected by Atlas (HTTP ' + (e.status || '?') + '): ' + req.body.video
+      );
+      err.status = e.status;
+      err.body = e.body;
+      throw err;
     }
+    throw e;
   }
   const ref = parseSubmit(json, req);
   return Object.assign(ref, {

@@ -7,6 +7,8 @@
  * 输入（与前端 POST /api/ai/templates 的 params 对齐）：
  *   {
  *     prompt, imageUrls, duration, aspectRatio, resolution, audio,
+ *     refVideoUrl,           // 场景对应的示例短片，场景一致性的来源
+ *     keepOriginalSound,     // 有参考视频时：沿用参考视频原声
  *     modelKey: 'kling-o3-r2v' | 'seedance',
  *     provider: 'fal' | 'atlas' | 'auto'
  *   }
@@ -41,6 +43,9 @@ function normalizeInput(input) {
   return {
     prompt: input.prompt || '',
     imageUrls: Array.isArray(input.imageUrls) ? input.imageUrls.slice(0, 7) : [],
+    // 参考视频与音频策略必须透传：漏了它们，成片的场景就和示例短片对不上
+    refVideoUrl: input.refVideoUrl || null,
+    keepOriginalSound: input.keepOriginalSound !== false,
     duration: duration,
     aspectRatio: input.aspectRatio || '9:16',
     resolution: input.resolution || '720p',
@@ -60,8 +65,10 @@ function pickModelKey(input, providerName) {
 
 async function submit(input) {
   const norm = normalizeInput(input);
-  norm.modelKey = pickModelKey(norm, name);
+  // 顺序不能反：name 必须先声明。写在 modelKey 之后会触发 TDZ
+  // （"Cannot access 'name' before initialization"），真实提交全部失败
   const name = resolveProvider(norm.provider);
+  norm.modelKey = pickModelKey(norm, name);
   const provider = PROVIDERS[name];
 
   if (!provider) return { ok: false, error: 'unknown_provider', provider: name };
