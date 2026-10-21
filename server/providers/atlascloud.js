@@ -211,6 +211,15 @@ function estimateCost(input, result) {
 
 async function submit(input) {
   const req = buildRequest(input);
+  // 提交前留痕：出片跑偏时能立刻对照「当时发出去的到底是什么」
+  console.log(JSON.stringify({
+    event: 'provider_submit_request', provider: id, model: req.body.model,
+    promptHead: String(req.body.prompt || '').slice(0, 160),
+    promptLen: String(req.body.prompt || '').length,
+    images: (req.body.images || req.body.image_urls || []).slice(0, 2),
+    duration: req.body.duration, aspect_ratio: req.body.aspect_ratio,
+    multi_shot: req.body.multi_shot
+  }));
   const json = await http.post(req.url, req.headers, req.body, 30000, 1);
   const ref = parseSubmit(json, req);
   return Object.assign(ref, { provider: id, model: req.body.model, modelKey: req.modelKey });
