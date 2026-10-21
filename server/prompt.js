@@ -8,7 +8,6 @@
 
 const WORLD_SETTINGS = {
   city: 'an abandoned city street',
-  snow: 'a snowy, abandoned mountain town',
   highway: 'an empty highway lined with abandoned cars'
 };
 
@@ -17,7 +16,6 @@ const WORLD_SETTINGS = {
 const ASSET_BASE = process.env.ASSET_BASE_URL || 'https://zombie-couple.xyz/assets';
 const WORLD_REF_VIDEO = {
   city: ASSET_BASE + '/videos/scene-ruined-city.mp4',
-  snow: ASSET_BASE + '/videos/scene-snow-town.mp4',
   highway: ASSET_BASE + '/videos/scene-highway.mp4'
 };
 
@@ -36,8 +34,9 @@ const BASE_PROMPT_TEMPLATE =
   "Audio: the natural ambient sound of the reference clip @Video1 carries through all four shots; no added music, no dialogue. Photorealistic, film grain, cinematic lighting. The gun is never fired. No blood, no gore, no wounds, no kissing, no text, no logos.";
 
 function buildPrompt(input) {
-  const world = (input && (input.world || input.setting)) || 'city';
-  const setting = WORLD_SETTINGS[world] || String(world);
+  const raw = (input && (input.world || input.setting)) || 'city';
+  // 未知场景一律回落 city：否则会把未知场景名当成描述文字直接塞进 prompt
+  const setting = WORLD_SETTINGS[raw] || WORLD_SETTINGS.city;
   return BASE_PROMPT_TEMPLATE.replace('{setting}', setting);
 }
 

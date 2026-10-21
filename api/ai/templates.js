@@ -44,7 +44,7 @@ module.exports = async function handler(req, res) {
   }
   const params = (body && body.params) || {};
 
-  // prompt 与参考视频都由服务端按场景决定：客户端只提交 world（city/snow/highway）
+  // prompt 与参考视频都由服务端按场景决定：客户端只提交 world（city/highway）
   const world = body.world || params.world || 'city';
   const prompt = (typeof params.prompt === 'string' && params.prompt.trim())
     ? params.prompt

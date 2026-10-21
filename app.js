@@ -109,7 +109,7 @@
       lang: (document.documentElement.lang || 'en').indexOf('zh') === 0 ? 'zh' : 'en',
       theme: 'dark',
       credits: 800,
-      world: 'city', // 'city' | 'snow' | 'highway'
+      world: 'city', // 'city' | 'highway'
       resolution: '720p', // '720p' | '1080p'
       apiEndpoint: '/api/ai/templates',
       allFaqsOpen: false,
@@ -144,13 +144,6 @@
         en: 'Ruined city',
         cover: ASSET_BASE + 'scene-ruined-city.jpg',
         video: ASSET_BASE + 'videos/scene-ruined-city.mp4'
-      },
-      snow: {
-        value: 'a snowy, abandoned mountain town',
-        zh: '雪中小镇',
-        en: 'Snowy town',
-        cover: ASSET_BASE + 'scene-snow-town.jpg',
-        video: ASSET_BASE + 'videos/scene-snow-town.mp4'
       },
       highway: {
         value: 'an empty highway lined with abandoned cars',
@@ -383,8 +376,8 @@
           name: t('sampleOwnerSlot'),
           src: makeAvatarDataUri('🧑', t('sampleOwner'), '#059669', '#064e3b')
         };
-        selectWorld('snow');
-        showToast(appState.lang === 'zh' ? '已填入「萌宠雪中小镇」示例照片' : 'Loaded Pet Sample Photos');
+        selectWorld('highway');
+        showToast(appState.lang === 'zh' ? '已填入「萌宠示例」照片' : 'Loaded Pet Sample Photos');
       } else {
         appState.slot1 = {
           loaded: true, isSample: true,
@@ -409,9 +402,6 @@
       if (index === 0) {
         fillSamplePhotos('couple');
         selectWorld('city');
-      } else if (index === 1) {
-        fillSamplePhotos('pet');
-        selectWorld('snow');
       } else {
         fillSamplePhotos('couple');
         selectWorld('highway');
@@ -424,7 +414,7 @@
     // =========================================================================
     function selectWorld(worldKey) {
       appState.world = worldKey;
-      var keys = ['city', 'snow', 'highway'];
+      var keys = ['city', 'highway'];
       for (var i = 0; i < keys.length; i++) {
         var k = keys[i];
         var btn = document.getElementById('world-btn-' + k);
@@ -903,7 +893,7 @@
     }
 
     function openPreviewModal(exampleIndex) {
-      var worldKeys = ['city', 'snow', 'highway'];
+      var worldKeys = ['city', 'highway'];
       var wKey = worldKeys[exampleIndex] || 'city';
       var wInfo = WORLD_MAP[wKey];
 
