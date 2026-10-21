@@ -575,11 +575,6 @@
     }
 
     function submitRealGeneration(cost) {
-      if (!ensureTwoUploadedPhotos()) {
-        refundCredits(cost);
-        hideProgressCard();
-        return;
-      }
       var statusTitle = document.getElementById('gen-status-title');
       if (statusTitle) {
         statusTitle.textContent = appState.lang === 'zh' ? '正在上传照片…' : 'Uploading photos…';
@@ -590,6 +585,11 @@
           refundCredits(cost);
           hideProgressCard();
           showToast(appState.lang === 'zh' ? '照片上传失败，已退回积分' : 'Photo upload failed, credits refunded', 'error');
+          return;
+        }
+        // 必须等上传完（拿到公网 URL）再检查：imageUrl 是上传后才写进 slot 的
+        if (!ensureTwoUploadedPhotos()) {
+          hideProgressCard();
           return;
         }
         if (statusTitle) {
