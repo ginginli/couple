@@ -374,7 +374,7 @@
     function fillSamplePhotos(mode) {
       if (mode === 'pet') {
         appState.slot1 = {
-          loaded: true,
+          loaded: true, isSample: true,
           name: t('sampleDogSlot'),
           src: makeAvatarDataUri('🐕', t('sampleDog'), '#d97706', '#78350f')
         };
@@ -387,7 +387,7 @@
         showToast(appState.lang === 'zh' ? '已填入「萌宠雪中小镇」示例照片' : 'Loaded Pet Sample Photos');
       } else {
         appState.slot1 = {
-          loaded: true,
+          loaded: true, isSample: true,
           name: t('samplePartnerSlot'),
           src: makeAvatarDataUri('👩', t('samplePartner'), '#e11d48', '#4c0519')
         };
@@ -578,6 +578,14 @@
     }
 
     function submitRealGeneration(cost) {
+      // 示例槽是 emoji 头像，不是真照片：拿去当参考图，模型只会输出莫名其妙的东西
+      if ((appState.slot1 && appState.slot1.isSample) || (appState.slot2 && appState.slot2.isSample)) {
+        hideProgressCard();
+        showToast(appState.lang === 'zh'
+          ? '示例头像不能用于真实生成——请上传两张真实照片（感染者 + 幸存者）'
+          : 'Sample avatars cannot be used for real renders — please upload two real photos', 'error');
+        return;
+      }
       var statusTitle = document.getElementById('gen-status-title');
       if (statusTitle) {
         statusTitle.textContent = appState.lang === 'zh' ? '正在上传照片…' : 'Uploading photos…';
