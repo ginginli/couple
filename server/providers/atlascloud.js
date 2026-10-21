@@ -72,11 +72,12 @@ function clampDuration(d, max) {
   return Math.max(3, Math.min(max || 15, Math.round(n)));
 }
 
-/** Atlas(Kling) 用 <<<image_1>>> / <<<image_2>>> 指代参考图，fal 用 @Image1 / @Image2 */
+/** Atlas(Kling) 用 <<<image_1>>> / <<<image_2>>> / <<<video_1>>> 指代输入，fal 用 @Image1 / @Image2 */
 function toAtlasPrompt(prompt) {
   return String(prompt || '')
     .replace(/@Image1/g, '<<<image_1>>>')
-    .replace(/@Image2/g, '<<<image_2>>>');
+    .replace(/@Image2/g, '<<<image_2>>>')
+    .replace(/@Video1/g, '<<<video_1>>>');
 }
 
 /** Grok Imagine 用 <IMAGE_1> / <IMAGE_2> */
@@ -101,6 +102,8 @@ function buildRequest(input) {
   const model = pickModelForResolution(input.resolution);
   const family = familyOf(model);
   const ar = input.aspectRatio || '9:16';
+  // 参考视频：按场景对应的示例短片，锁住场景/光线/运镜（Kling 的 video 字段）
+  const refVideo = input.refVideoUrl || null;
 
   let body;
   if (family === 'grok') {
@@ -117,15 +120,54 @@ function buildRequest(input) {
     body = {
       model: model,
       prompt: toAtlasPrompt(input.prompt),
-      images: images,                       // 参考图数组（无参考视频时最多 7 张）
+      // 传了参考视频时，Atlas 把参考图上限从 7 张降到 4 张（我们只用 2 张，始终安全）
+      images: images.slice(0, refVideo ? 4 : 7),
       duration: clampDuration(input.duration, 15),
       aspect_ratio: ['16:9', '9:16', '1:1'].indexOf(ar) !== -1 ? ar : '9:16',
-      sound: input.audio !== false,         // Atlas 的音频字段是 sound，不是 enable_audio
+      // 有参考视频时 multi_shot 只允许 intelligence（我们本来就是）
       multi_shot: true,
       shot_type: 'intelligence'             // 由模型按 prompt 自动分镜（我们的 prompt 已写好四镜）
     };
+    if (refVideo) {
+      // 只要传了 video，Atlas 会强制关闭 sound（原生音频生成），
+      // 音频改由 keep_original_sound 决定：true = 沿用参考视频原声
+      body.video = refVideo;
+      body.keep_original_sound = input.keepOriginalSound !== false;
+      body.sound = false;
+    } else {
+      body.sound = input.audio !== false;   // Atlas 的音频字段是 sound，不是 enable_audio
+    }
   }
   return { url: BASE + SUBMIT_PATH, headers: headers(), body: body, model: model, modelKey: modelKey };
+}
+
+/**
+ * 去掉参考视频相关的两句（场景锁定 + 音频沿用原声），退回「纯参考图 + 原生音频」。
+ * 只在参考视频被 Atlas 拒绝（例如短片尺寸不合 700-4553px 的要求）时才用，
+ * 保证降级后 prompt 里不会留下指不到任何东西的 <<<video_1>>>。
+ */
+function stripVideoRef(prompt) {
+  return String(prompt || '')
+    .replace(/LOCATION AND CAMERA:[^\n]*\n\n/g, '')
+    .replace(
+      /Audio: the natural ambient sound of the reference clip[^\n]*/g,
+      'Audio: a low tense drone and a heartbeat in shots 1 to 3, switching at the cut to a soft, warm piano melody; no dialogue. Photorealistic, film grain, cinematic lighting. The gun is never fired. No blood, no gore, no wounds, no kissing, no text, no logos.'
+    );
+}
+
+function logSubmit(req) {
+  console.log(JSON.stringify({
+    event: 'provider_submit_request', provider: id, model: req.body.model,
+    promptHead: String(req.body.prompt || '').slice(0, 160),
+    promptLen: String(req.body.prompt || '').length,
+    images: (req.body.images || req.body.image_urls || []).slice(0, 2),
+    video: req.body.video || null,
+    hasVideo: !!req.body.video,      // 传了参考视频 → 计价可能不同，出片后拿 price 对照
+    keep_original_sound: req.body.keep_original_sound,
+    sound: req.body.sound,
+    duration: req.body.duration, aspect_ratio: req.body.aspect_ratio,
+    multi_shot: req.body.multi_shot
+  }));
 }
 
 function parseSubmit(json, ctx) {
@@ -210,19 +252,36 @@ function estimateCost(input, result) {
 }
 
 async function submit(input) {
-  const req = buildRequest(input);
+  let req = buildRequest(input);
   // 提交前留痕：出片跑偏时能立刻对照「当时发出去的到底是什么」
-  console.log(JSON.stringify({
-    event: 'provider_submit_request', provider: id, model: req.body.model,
-    promptHead: String(req.body.prompt || '').slice(0, 160),
-    promptLen: String(req.body.prompt || '').length,
-    images: (req.body.images || req.body.image_urls || []).slice(0, 2),
-    duration: req.body.duration, aspect_ratio: req.body.aspect_ratio,
-    multi_shot: req.body.multi_shot
-  }));
-  const json = await http.post(req.url, req.headers, req.body, 30000, 1);
+  logSubmit(req);
+  let json;
+  try {
+    json = await http.post(req.url, req.headers, req.body, 30000, 1);
+  } catch (e) {
+    // 参考视频被拒（短片尺寸/规格不合要求时 Atlas 会回 400）→ 去掉参考视频重投一次。
+    // 宁可场景一致性打折，也不让整单生成失败：用户此时已经被预扣积分了。
+    if (req.body.video && e.status === 400) {
+      console.warn(JSON.stringify({
+        event: 'ref_video_rejected_fallback', provider: id, model: req.body.model,
+        video: req.body.video, status: e.status,
+        body: String(e.body || '').slice(0, 300)
+      }));
+      req = buildRequest(Object.assign({}, input, {
+        refVideoUrl: null,
+        prompt: stripVideoRef(input.prompt)
+      }));
+      logSubmit(req);
+      json = await http.post(req.url, req.headers, req.body, 30000, 1);
+    } else {
+      throw e;
+    }
+  }
   const ref = parseSubmit(json, req);
-  return Object.assign(ref, { provider: id, model: req.body.model, modelKey: req.modelKey });
+  return Object.assign(ref, {
+    provider: id, model: req.body.model, modelKey: req.modelKey,
+    usedRefVideo: !!req.body.video
+  });
 }
 
 async function status(ref) {

@@ -11,7 +11,7 @@
  */
 const adapter = require('../../server/provider-adapter');
 const tokens = require('../../server/tokens');
-const { buildPrompt } = require('../../server/prompt');
+const { buildPrompt, refVideoFor } = require('../../server/prompt');
 const auth = require('../../server/auth');
 const credits = require('../../server/credits');
 
@@ -44,10 +44,11 @@ module.exports = async function handler(req, res) {
   }
   const params = (body && body.params) || {};
 
-  // prompt 由服务端组装：客户端只提交 world（city/snow/highway）
+  // prompt 与参考视频都由服务端按场景决定：客户端只提交 world（city/snow/highway）
+  const world = body.world || params.world || 'city';
   const prompt = (typeof params.prompt === 'string' && params.prompt.trim())
     ? params.prompt
-    : buildPrompt({ world: body.world || params.world || 'city' });
+    : buildPrompt({ world: world });
   if (!prompt) {
     return res.status(400).json({ ok: false, error: 'could not build prompt' });
   }
@@ -78,6 +79,10 @@ module.exports = async function handler(req, res) {
   const input = {
     prompt: prompt,
     imageUrls: imageUrls.slice(0, 2),
+    // 场景对应的示例短片：锁住场景、光线与运镜，保证成片和示例是同一个世界
+    refVideoUrl: refVideoFor(world),
+    // 传了参考视频后 Atlas 会关闭原生音频生成，音频由它决定：true=沿用参考视频原声
+    keepOriginalSound: true,
     duration: params.duration || 13,
     aspectRatio: params.aspect_ratio || '9:16',
     resolution: resolution,
