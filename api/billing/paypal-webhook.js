@@ -72,6 +72,16 @@ async function verifySignature(headers, raw, event) {
   return out && out.verification_status === 'SUCCESS';
 }
 
+/** capture 事件常不带 payer / custom_id，需要回查订单补齐 */
+async function fetchOrder(orderId) {
+  const token = await getAccessToken();
+  const res = await fetch(API_BASE + '/v2/checkout/orders/' + encodeURIComponent(orderId), {
+    headers: { Authorization: 'Bearer ' + token }
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
 function packByAmount(value, currency) {
   if (String(currency || '').toUpperCase() !== 'USD') return null;
   const usd = Number(value);
@@ -97,8 +107,21 @@ async function handleCompleted(event) {
     return { ok: true, ignored: 'unknown_amount' };
   }
 
-  const customId = r.custom_id || r.custom || null;
-  const payerEmail = (r.payer && r.payer.email_address) || null;
+  let customId = r.custom_id || r.custom || null;
+  let payerEmail = (r.payer && r.payer.email_address) || null;
+
+  if (!customId || !payerEmail) {
+    const orderRef = r.supplementary_data && r.supplementary_data.related_ids
+      && r.supplementary_data.related_ids.order_id;
+    if (orderRef) {
+      const order = await fetchOrder(orderRef);
+      if (order) {
+        const unit = (order.purchase_units && order.purchase_units[0]) || {};
+        if (!customId) customId = unit.custom_id || order.custom_id || null;
+        if (!payerEmail) payerEmail = (order.payer && order.payer.email_address) || null;
+      }
+    }
+  }
 
   let userId = null;
   if (customId && String(customId).indexOf('@') !== -1) {
