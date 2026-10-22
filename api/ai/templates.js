@@ -14,6 +14,13 @@ const tokens = require('../../server/tokens');
 const { buildPrompt, refVideoFor } = require('../../server/prompt');
 const auth = require('../../server/auth');
 const credits = require('../../server/credits');
+const reconcile = require('../../server/reconcile');
+
+// 作品卡展示用的角色名来自前端（文件名/自定义名），落库前统一裁剪并去掉尖括号
+function cleanLabel(value, fallback) {
+  const s = typeof value === 'string' ? value.replace(/[<>]/g, '').trim() : '';
+  return (s || fallback).slice(0, 60);
+}
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -41,6 +48,9 @@ module.exports = async function handler(req, res) {
     } catch (e) {
       return res.status(400).json({ ok: false, error: 'invalid JSON body' });
     }
+  }
+  if (!body || typeof body !== 'object') {
+    return res.status(400).json({ ok: false, error: 'invalid JSON body' });
   }
   const params = (body && body.params) || {};
 
@@ -114,14 +124,27 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // 记录任务归属，供失败时退款（/api/ai/status）
-    await credits.markOrder('job:' + job.provider + ':' + job.providerJobId, {
+    // 记录任务归属，供失败时退款（/api/ai/status）与成功后落作品库
+    const orderKey = 'job:' + job.provider + ':' + job.providerJobId;
+    await credits.markOrder(orderKey, {
       userId: user.sub,
       cost: cost,
       resolution: input.resolution,
+      world: world,
+      role1: cleanLabel(body && body.role1, 'Image 1'),
+      role2: cleanLabel(body && body.role2, 'Image 2'),
+      lang: (body && body.lang) === 'zh' ? 'zh' : 'en',
+      model: job.model,
+      provider: job.provider,
       refunded: false,
       at: new Date().toISOString()
     });
+    // 登记到补偿扫描：用户关掉页面、没人轮询时，也能落作品库 / 失败退款
+    try {
+      await reconcile.track(user.sub, orderKey);
+    } catch (e) {
+      console.error(JSON.stringify({ event: 'reconcile_track_failed', jobId: job.providerJobId, error: e.message }));
+    }
 
     const token = tokens.createToken(job.provider + ':' + job.providerJobId);
     const statusUrl =

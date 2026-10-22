@@ -5,6 +5,8 @@
 const adapter = require('../../server/provider-adapter');
 const tokens = require('../../server/tokens');
 const credits = require('../../server/credits');
+const works = require('../../server/works');
+const reconcile = require('../../server/reconcile');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -27,20 +29,38 @@ module.exports = async function handler(req, res) {
     // 渲染失败/取消：按提交时登记的归属自动退积分（幂等）
     let refunded = 0;
     let balance = null;
+    const orderKey = 'job:' + provider + ':' + id;
     if (state.state === 'failed' || state.state === 'canceled') {
-      const rec = await credits.orderDone('job:' + provider + ':' + id);
+      const rec = await credits.orderDone(orderKey);
       if (rec && !rec.refunded && rec.userId) {
         const out = await credits.refundUser(rec.userId, rec.cost, 'job_' + state.state);
         if (out.ok) {
           refunded = rec.cost;
           balance = out.balance;
-          await credits.markOrder('job:' + provider + ':' + id, Object.assign({}, rec, { refunded: true, refundedAt: new Date().toISOString() }));
+          await credits.markOrder(orderKey, Object.assign({}, rec, {
+            refunded: true,
+            completed: true,
+            refundedAt: new Date().toISOString()
+          }));
+          await reconcile.untrack(rec.userId, orderKey);
           console.log(JSON.stringify({ event: 'job_refunded', jobId: id, userId: rec.userId, credits: rec.cost }));
         }
+      } else if (rec) {
+        await reconcile.untrack(rec.userId, orderKey);
       }
     } else if (state.state === 'succeeded') {
-      const rec = await credits.orderDone('job:' + provider + ':' + id);
+      const rec = await credits.orderDone(orderKey);
       if (rec) balance = await credits.balanceUser(rec.userId);
+      // 成功后把成片落进用户作品库（幂等：同一 jobId 只写一次），
+      // 否则刷新页面/换设备后前端内存里的作品列表就丢了
+      if (rec && rec.userId && state.videoUrl) {
+        await works.add(rec.userId, works.workRecord(rec, provider, id, state.videoUrl));
+        await credits.markOrder(orderKey, Object.assign({}, rec, {
+          completed: true,
+          completedAt: new Date().toISOString()
+        }));
+        await reconcile.untrack(rec.userId, orderKey);
+      }
       // 真实成本：Atlas 响应里的 price 才是准的，RATES 只是估算。
       // 带上视频档位与是否有参考视频，方便直接算单价（price / 秒数）
       try {

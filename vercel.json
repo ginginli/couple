@@ -6,6 +6,12 @@
       "maxDuration": 60
     }
   },
+  "crons": [
+    {
+      "path": "/api/cron/reconcile",
+      "schedule": "0 3 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",

@@ -49,6 +49,20 @@ function memCmd(args) {
     const arr = JSON.parse(memory.get(k) || '[]');
     return arr.slice(Number(v) /* start */, Number(args[3]) + 1 || undefined);
   }
+  if (op === 'LREM') {
+    // v 是 count，args[3] 已经和 RPUSH 写入的格式一致（JSON 字符串）
+    const arr = JSON.parse(memory.get(k) || '[]');
+    const target = String(args[3]);
+    const count = Number(v) || 0;
+    let removed = 0;
+    const next = arr.filter(function (x) {
+      if (x !== target) return true;
+      if (count === 0 || removed < count) { removed++; return false; }
+      return true;
+    });
+    memory.set(k, JSON.stringify(next));
+    return removed;
+  }
   if (op === 'EXISTS') return memory.has(k) ? 1 : 0;
   throw new Error('mem: unsupported ' + op);
 }
@@ -103,6 +117,11 @@ async function push(key, entry) {
   await run(['RPUSH', key, JSON.stringify(entry)]);
 }
 
+/** 从列表移除元素（count=0 移除全部）；值按 push 时的 JSON 格式比对 */
+async function lrem(key, value, count) {
+  return Number(await run(['LREM', key, String(count || 0), JSON.stringify(value)]));
+}
+
 async function list(key, limit) {
   const items = await run(['LRANGE', key, 0, (limit || 100) - 1]);
   return (items || []).map((x) => {
@@ -126,6 +145,7 @@ module.exports = {
   getNumber,
   addNumber,
   push,
+  lrem,
   list,
   del,
   // 供测试注入

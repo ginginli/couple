@@ -463,8 +463,10 @@
 
     function startZombieGeneration() {
       if (!appState.slot1.loaded || !appState.slot2.loaded) {
-        fillSamplePhotos('couple');
-        showToast(appState.lang === 'zh' ? '已自动为你补齐示例照片并开始生成！' : 'Auto-filled sample photos and started generation!');
+        showToast(appState.lang === 'zh'
+          ? '请先上传两张照片（感染者 + 幸存者）再生成'
+          : 'Please upload both photos (infected + survivor) first', 'error');
+        return;
       }
 
       var cost = TIER_PRICES[appState.resolution];
@@ -501,20 +503,31 @@
       }
     }
 
+    // 真实渲染没有分镜级进度：隐藏 4 个镜头 chip 和进度条，只保留状态文案 + 已用时间
+    function setProgressDetailVisible(visible) {
+      var chips = document.getElementById('gen-shot-chips');
+      var track = document.getElementById('gen-progress-track');
+      if (chips) chips.classList.toggle('hidden', !visible);
+      if (track) track.classList.toggle('hidden', !visible);
+    }
+
     function runDemoGeneration(cost) {
       var progCard = document.getElementById('generation-progress-card');
       var progBar = document.getElementById('gen-progress-bar');
       var timerBadge = document.getElementById('gen-timer-badge');
       progCard.classList.remove('hidden');
+      setProgressDetailVisible(true);
 
       if (activeGenInterval) clearInterval(activeGenInterval);
       var pct = 5;
+      var started = Date.now();
 
       activeGenInterval = setInterval(function() {
         pct += 4;
         if (pct > 100) pct = 100;
         progBar.style.width = pct + '%';
-        timerBadge.textContent = pct + '%';
+        // 不显示百分比，只显示已用时间
+        timerBadge.textContent = Math.round((Date.now() - started) / 1000) + 's';
 
         // Highlight current shot step
         var activeStep = pct < 25 ? 1 : (pct < 55 ? 2 : (pct < 82 ? 3 : 4));
@@ -569,6 +582,7 @@
     }
 
     function submitRealGeneration(cost) {
+      setProgressDetailVisible(false);
       // 示例槽是 emoji 头像，不是真照片：拿去当参考图，模型只会输出莫名其妙的东西
       if ((appState.slot1 && appState.slot1.isSample) || (appState.slot2 && appState.slot2.isSample)) {
         hideProgressCard();
@@ -584,13 +598,18 @@
 
       ensureUploadedImages().then(function(ok) {
         if (!ok) {
-          refundCredits(cost);
+          // 登录用户的积分由服务端在提交任务时才扣：上传失败发生在扣分之前，
+          // 这里若再走本地退款，只会把界面余额虚增，所以只在本地扣分模式下退
+          if (!appState.serverBilled) refundCredits(cost);
           hideProgressCard();
-          showToast(appState.lang === 'zh' ? '照片上传失败，已退回积分' : 'Photo upload failed, credits refunded', 'error');
+          showToast(appState.lang === 'zh'
+            ? (appState.serverBilled ? '照片上传失败，未扣除积分' : '照片上传失败，已退回积分')
+            : (appState.serverBilled ? 'Photo upload failed — no credits were charged' : 'Photo upload failed, credits refunded'), 'error');
           return;
         }
         // 必须等上传完（拿到公网 URL）再检查：imageUrl 是上传后才写进 slot 的
         if (!ensureTwoUploadedPhotos()) {
+          if (!appState.serverBilled) refundCredits(cost);
           hideProgressCard();
           return;
         }
@@ -687,6 +706,10 @@
     }
 
     function hideProgressCard() {
+      if (activeGenInterval) {
+        clearInterval(activeGenInterval);
+        activeGenInterval = null;
+      }
       var progCard = document.getElementById('generation-progress-card');
       if (progCard) progCard.classList.add('hidden');
     }
@@ -696,15 +719,46 @@
       var progBar = document.getElementById('gen-progress-bar');
       var timerBadge = document.getElementById('gen-timer-badge');
       var statusTitle = document.getElementById('gen-status-title');
+      var modelLabel = job.model || job.provider;
+      var phase = 'queued';
+      // 渲染一般 3-4 分钟；超过 150 秒就把文案从“渲染中”换成“快好了”
+      var ALMOST_DONE_MS = 150000;
+
+      function elapsedSeconds() {
+        return Math.round((Date.now() - started) / 1000);
+      }
+
+      // 只按真实阶段推进：排队 -> 渲染 -> 快好了，不再伪装成百分比
+      function paint() {
+        var sec = elapsedSeconds();
+        if (timerBadge) timerBadge.textContent = sec + 's';
+        if (statusTitle) {
+          var zh = appState.lang === 'zh';
+          if (phase === 'queued') {
+            statusTitle.textContent = zh ? '排队中…' : 'Queued…';
+          } else if (sec * 1000 >= ALMOST_DONE_MS) {
+            statusTitle.textContent = zh
+              ? ('快好了 · ' + modelLabel)
+              : ('Almost done · ' + modelLabel);
+          } else {
+            statusTitle.textContent = zh
+              ? ('渲染中 · ' + modelLabel)
+              : ('Rendering · ' + modelLabel);
+          }
+        }
+        if (progBar) {
+          progBar.style.width = phase === 'queued'
+            ? '12%'
+            : (sec * 1000 >= ALMOST_DONE_MS ? '80%' : '45%');
+        }
+      }
+
+      if (activeGenInterval) clearInterval(activeGenInterval);
+      activeGenInterval = setInterval(paint, 1000);
+      paint();
 
       function tick() {
         fetch(job.statusUrl).then(function (r) { return r.json(); }).then(function (s) {
-          var elapsed = Math.round((Date.now() - started) / 1000);
-          if (timerBadge) timerBadge.textContent = elapsed + 's';
-          if (progBar) {
-            var pct = Math.min(92, 8 + Math.round(elapsed / 90 * 84));
-            progBar.style.width = pct + '%';
-          }
           if (s && s.state === 'succeeded' && s.videoUrl) {
             if (progBar) progBar.style.width = '100%';
             finishRealGeneration(job, s, cost);
@@ -714,6 +768,8 @@
             failRealGeneration(cost);
             return;
           }
+          if (s && s.state) phase = s.state;
+          paint();
           setTimeout(tick, BACKEND.pollIntervalMs);
         }).catch(function () {
           if (Date.now() - started > BACKEND.maxWaitMs) {
@@ -724,11 +780,6 @@
         });
       }
 
-      if (statusTitle) {
-        statusTitle.textContent = appState.lang === 'zh'
-          ? ('渲染中 · ' + (job.model || job.provider))
-          : ('Rendering · ' + (job.model || job.provider));
-      }
       tick();
     }
 
@@ -748,6 +799,7 @@
         videoUrl: s.videoUrl,
         provider: job.provider,
         modelLabel: job.model,
+        expiresAt: Date.now() + LINK_TTL_MS,
         createdAt: t('createdGenerated')
       };
       appState.works.unshift(newWork);
@@ -770,6 +822,54 @@
     function refundCredits(amount) {
       appState.credits += amount;
       updatePromptAndPriceUI();
+    }
+
+    // 成片链接由上游托管，按 7 天保守提示（Atlas 默认 14 天，取更短的提醒更安全）
+    var LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+    function linkExpiryText(w) {
+      if (!w.videoUrl || !w.expiresAt) return '';
+      var left = w.expiresAt - Date.now();
+      if (left <= 0) {
+        return appState.lang === 'zh' ? '链接可能已过期，请尽快下载' : 'Link may have expired — download soon';
+      }
+      var days = Math.ceil(left / (24 * 60 * 60 * 1000));
+      return appState.lang === 'zh'
+        ? ('链接 ' + days + ' 天后过期')
+        : ('Link expires in ' + days + (days === 1 ? ' day' : ' days'));
+    }
+
+    // 服务端作品记录 -> 前端作品卡数据
+    function workFromRecord(rec) {
+      var wInfo = WORLD_MAP[rec.world] || WORLD_MAP.city;
+      var lang = appState.lang;
+      var name1 = String(rec.role1 || 'Image 1');
+      var name2 = String(rec.role2 || 'Image 2');
+      var createdMs = Date.parse(rec.createdAt);
+      return {
+        id: 'srv-' + rec.jobId,
+        title: wInfo[lang] + ' · ' + name1.split(' ')[0] + ' & ' + name2.split(' ')[0],
+        worldKey: rec.world || 'city',
+        worldLabel: wInfo[lang],
+        resolution: rec.resolution || '720p',
+        creditsCost: rec.creditsCost || 0,
+        role1: name1,
+        role2: name2,
+        coverSrc: wInfo.cover,
+        videoUrl: rec.videoUrl,
+        provider: rec.provider,
+        modelLabel: rec.model || '',
+        expiresAt: isNaN(createdMs) ? Date.now() + LINK_TTL_MS : createdMs + LINK_TTL_MS,
+        createdAt: formatWorkTime(rec.createdAt)
+      };
+    }
+
+    function formatWorkTime(iso) {
+      var d = new Date(iso);
+      if (!iso || isNaN(d.getTime())) return t('createdGenerated');
+      return d.toLocaleString(appState.lang === 'zh' ? 'zh-CN' : 'en-US', {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
     }
 
     function renderWorksGrid() {
@@ -811,6 +911,9 @@
                 '<h3 class="text-sm font-bold text-[var(--color-text)]">' + w.title + '</h3>' +
                 '<p class="text-xs text-[var(--color-text-muted)]">🧟 @Image1: ' + w.role1 + '</p>' +
                 '<p class="text-xs text-[var(--color-text-muted)]">🔫 @Image2: ' + w.role2 + '</p>' +
+                (w.videoUrl && w.expiresAt
+                  ? '<p class="text-[11px] font-medium text-amber-500">' + linkExpiryText(w) + '</p>'
+                  : '') +
               '</div>' +
               '<div class="pt-3 flex flex-wrap items-center gap-2">' +
                 '<button type="button" onclick="openPreviewModalByWork(' + i + ')" class="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-colors">' +
@@ -1337,11 +1440,33 @@
             appState.credits = data.credits;
             updatePromptAndPriceUI();
           }
+          // 作品以服务端为准：登录后（含换设备/重新登录）恢复历史成片
+          if (appState.user && Array.isArray(data.works)) {
+            appState.works = data.works.map(workFromRecord);
+            renderWorksGrid();
+          }
           renderAccountChip();
           if (appState.config && appState.config.googleClientId) loadGoogleIdentity();
           return appState.user;
         })
         .catch(function () { renderAccountChip(); return null; });
+    }
+
+    // 回到站点时补查未完成的任务：成功则补进作品库、失败则退款。
+    // 服务端另有 90 秒节流，前端也做一层，避免 focus 时反复请求。
+    var lastReconcileAt = 0;
+    function reconcileWorks() {
+      if (!appState.user) return Promise.resolve(null);
+      var now = Date.now();
+      if (now - lastReconcileAt < 90000) return Promise.resolve(null);
+      lastReconcileAt = now;
+      return fetch('/api/account/reconcile', { method: 'POST', credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (j && j.changed > 0) return syncAccount();
+          return null;
+        })
+        .catch(function () { return null; });
     }
 
     function loadGoogleIdentity() {
@@ -1390,6 +1515,11 @@
           appState.credits = typeof res.body.credits === 'number' ? res.body.credits : appState.credits;
           updatePromptAndPriceUI();
           renderAccountChip();
+          // 登录后拉一次作品，并补查上次没等到结果的任务
+          syncAccount().then(function () {
+            lastReconcileAt = 0;
+            reconcileWorks();
+          });
           showToast(appState.lang === 'zh'
             ? ('\u2705 已登录：' + (appState.user.email || appState.user.name))
             : ('\u2705 Signed in as ' + (appState.user.email || appState.user.name)));
@@ -1422,6 +1552,9 @@
         .catch(function () {})
         .then(function () {
           appState.user = null;
+          // 作品属于账号：退出后立刻从界面清掉，避免下一个登录的人看到
+          appState.works = [];
+          renderWorksGrid();
           renderAccountChip();
           showToast(appState.lang === 'zh' ? '已退出登录' : 'Signed out');
         });
@@ -1567,6 +1700,10 @@
         templateSlug: "zombie-love-story",
         interfaceId: "dea38f30-c9e1-47dd-be48-4648a7e59f99",
         world: appState.world,
+        // 服务端落作品库时要用：角色名只作展示，语言决定标题语言
+        lang: appState.lang,
+        role1: appState.slot1.name,
+        role2: appState.slot2.name,
         params: {
           duration: 13,
           aspect_ratio: "9:16",
@@ -1733,7 +1870,9 @@
       appState.selectedPack = 3160;
       selectPack(3160);
       syncPackLinks();
-      syncAccount();
+      syncAccount().then(function (u) {
+        if (u) reconcileWorks();
+      });
       handleTopupReturn();
 
       // 从 Creem 支付页切回来时自动刷新余额（不用手动刷新页面）
@@ -1743,6 +1882,8 @@
         if (!appState.user || now - lastSync < 8000) return;
         lastSync = now;
         syncAccount();
+        // 切回页面时顺带补查上次没等到结果的渲染任务（服务端有节流）
+        reconcileWorks();
       }
       document.addEventListener('visibilitychange', function () {
         if (document.visibilityState === 'visible') resyncBalance();

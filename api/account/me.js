@@ -6,6 +6,7 @@
 const auth = require('../../server/auth');
 const credits = require('../../server/credits');
 const billing = require('../../server/billing');
+const works = require('../../server/works');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -21,6 +22,7 @@ module.exports = async function handler(req, res) {
       user: null,
       credits: null,
       ledger: [],
+      works: [],
       config: { googleClientId: auth.GOOGLE_CLIENT_ID || null, billingEnabled: billing.enabled() }
     });
   }
@@ -32,6 +34,7 @@ module.exports = async function handler(req, res) {
     user: { sub: profile.sub, email: profile.email, name: profile.name, picture: profile.picture },
     credits: await credits.balanceUser(u.sub),
     ledger: await credits.ledgerUser(u.sub, 20),
+    works: await works.list(u.sub, 20),
     claimed: claimed && claimed.credits ? claimed.credits : 0,
     config: { googleClientId: auth.GOOGLE_CLIENT_ID || null, billingEnabled: billing.enabled() }
   });

@@ -182,11 +182,11 @@ function normalizeState(s) {
 
 function parseStatus(json) {
   const data = json.data || json;
-  // Atlas states: processing, completed, failed
+  // Atlas states: queued -> processing -> completed/failed
   let state = 'running';
   if (data.status === 'completed') state = 'succeeded';
   else if (data.status === 'failed' || data.error) state = 'failed';
-  else if (data.status === 'processing' || data.status === 'queued') state = 'queued';
+  else if (normalizeState(data.status) === 'queued') state = 'queued';
   
   return { state, raw: json };
 }
