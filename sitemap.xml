@@ -100,8 +100,15 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://www.zombie-couple.xyz/press.html" />
   </url>
   <url>
+    <loc>https://www.zombie-couple.xyz/blog/</loc>
+    <lastmod>2026-10-22</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.zombie-couple.xyz/blog/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.zombie-couple.xyz/blog/" />
+  </url>
+  <url>
     <loc>https://www.zombie-couple.xyz/blog/best-ai-zombie-couple-video-generators.html</loc>
     <lastmod>2026-10-22</lastmod>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.zombie-couple.xyz/blog/best-ai-zombie-couple-video-generators.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.zombie-couple.xyz/blog/best-ai-zombie-couple-video-generators.html" />
   </url>
 </urlset>
