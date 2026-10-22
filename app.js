@@ -28,6 +28,7 @@
         signOut: 'Sign out',
         loginRequired: 'Please sign in with Google to generate',
         billingNotConfigured: 'Top-up is not open yet - check back soon',
+        paypalPending: 'PayPal opened in a new tab. After paying, leave your PayPal email on the contact page so we can credit your account.',
         topupSuccess: 'Payment received - credits added',
         muted: 'Muted',
         audioScore: 'Heartbeat + piano score',
@@ -72,6 +73,7 @@
         signOut: '退出登录',
         loginRequired: '请先登录再生成',
         billingNotConfigured: '充值通道暂未开启，请稍后再来',
+        paypalPending: '已在新窗口打开 PayPal。付款后请在联系页留下付款邮箱，我们核对后为你入账。',
         topupSuccess: '支付成功，积分已到账',
         muted: '已静音',
         audioScore: '心跳+钢琴配乐',
@@ -1312,11 +1314,11 @@
       document.getElementById('topup-modal').classList.add('hidden');
     }
 
-    // 真实收款：填入 Stripe Payment Link 后自动跳转；留空则是演示模式（直接加积分）
-    var STRIPE_PAYMENT_LINKS = {
-      // '1580':  'https://buy.stripe.com/xxxx_starter',   // $7.90  ← 1×720p
-      // '3160':  'https://buy.stripe.com/xxxx_popular',   // $9.90  ← 2×720p
-      // '5080':  'https://buy.stripe.com/xxxx_pro'        // $15.90 ← 1×1080p + 1×720p
+    // PayPal 支付链接（No-Code Payment）：下单后需人工核对到账再补积分
+    var PAYPAL_LINKS = {
+      '1580': 'https://www.paypal.com/ncp/payment/5KBYY6W5BWB64',   // $7.90  ← 1×720p
+      '3160': 'https://www.paypal.com/ncp/payment/4UJS9WNNNYEBA',   // $9.90  ← 2×720p
+      '5080': 'https://www.paypal.com/ncp/payment/JR39ZBT7E64K8'    // $15.90 ← 1×1080p + 1×720p
     };
 
 
@@ -1505,6 +1507,15 @@
       if (!appState.user) {
         showToast(t('loginRequired'), 'error');
         signInWithGoogle();
+        return;
+      }
+
+      // 该档位配了 PayPal 链接：直接打开付款页，积分由人工核对后补发
+      var paypalUrl = PAYPAL_LINKS[String(amount)];
+      if (paypalUrl) {
+        closeTopupModal();
+        window.open(paypalUrl, '_blank', 'noopener');
+        showToast(t('paypalPending'));
         return;
       }
 
