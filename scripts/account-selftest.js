@@ -23,23 +23,23 @@ const SUB = 'g:1234567890';
   assert.strictEqual(u.email, 'a@b.com');
   console.log('✓ 用户档案写入');
 
-  // 3) 充值入账（模拟 Creem webhook 发放 3,000 积分包）
+  // 3) 充值入账（模拟 Creem webhook 发放双片包积分）
   const g = await credits.grantUser(SUB, credits.PACKS.popular.credits, 'purchase:popular', { orderId: 'ord_1' });
-  assert.strictEqual(g.balance, 3000);
+  assert.strictEqual(g.balance, 3160);
   console.log('✓ 充值入账：', g.balance);
 
   // 4) 幂等：同一订单不重复入账
-  await credits.markOrder('ord_1', { userId: SUB, granted: true, balance: 3000 });
+  await credits.markOrder('ord_1', { userId: SUB, granted: true, balance: 3160 });
   const done = await credits.orderDone('ord_1');
   assert.ok(done && done.granted, '订单记录应标记已发放');
   console.log('✓ 订单幂等标记');
 
-  // 5) 预扣 720p
+  // 5) 预扣 720p（1,580，双片包正好剩一条）
   const spend = await credits.spendUser(SUB, credits.TIER_CREDITS['720p'], 'render:720p');
-  assert.strictEqual(spend.balance, 2400);
+  assert.strictEqual(spend.balance, 1580);
   console.log('✓ 预扣 720p：', spend.balance);
 
-  // 6) 余额不足换不起 1080p（2,100 > 300? 这里余额 2,400 够；改用小额测试）
+  // 6) 余额不足换不起 1080p（3,280 > 1,580）
   const poor = 'g:poor';
   const noMoney = await credits.spendUser(poor, credits.TIER_CREDITS['1080p'], 'render:1080p');
   assert.strictEqual(noMoney.ok, false);
@@ -48,7 +48,7 @@ const SUB = 'g:1234567890';
 
   // 7) 失败退款
   const back = await credits.refundUser(SUB, credits.TIER_CREDITS['720p'], 'job_failed');
-  assert.strictEqual(back.balance, 3000);
+  assert.strictEqual(back.balance, 3160);
   console.log('✓ 失败自动退款：', back.balance);
 
   // 8) 流水

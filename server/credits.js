@@ -10,16 +10,18 @@
 const store = require('./store');
 
 // 三个积分包：与页面展示一致
+// 每包积分都刚好等于它能生成的片子，不留零头：
+//   starter 1,580 = 1×720p；popular 3,160 = 2×720p；pro 5,080 = 1×1080p + 1×720p
 const PACKS = {
-  starter: { credits: 2000, usd: 9.9, label: 'Starter Pack' },
-  popular: { credits: 3000, usd: 12.9, label: 'Couple Viral Pack' },
-  pro: { credits: 20000, usd: 99.0, label: 'Creator Pro Pack' }
+  starter: { credits: 1580, usd: 7.9, label: 'First Bite' },
+  popular: { credits: 3160, usd: 9.9, label: 'Double Date' },
+  pro: { credits: 5080, usd: 15.9, label: 'Happy Ending' }
 };
 
 // 服务端定价：前端传什么都不算，以这里为准（防改价）
 // 只卖 720p / 1080p 两档：Atlas 上 480p 与 720p 走的是同一个模型（Kling O3 Std 固定 720P），
 // 卖 480p 等于收低价出同样的片子，没有意义
-const TIER_CREDITS = { '720p': 600, '1080p': 2100 };
+const TIER_CREDITS = { '720p': 1580, '1080p': 3280 };
 
 const TIERS = Object.keys(TIER_CREDITS);
 
