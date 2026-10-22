@@ -136,6 +136,8 @@ module.exports = async function handler(req, res) {
       lang: (body && body.lang) === 'zh' ? 'zh' : 'en',
       model: job.model,
       provider: job.provider,
+      // 轮询时只拿得到 jobId：把提交时的状态地址一并落库，避免重建时出错
+      statusUrl: job.statusUrl,
       refunded: false,
       at: new Date().toISOString()
     });

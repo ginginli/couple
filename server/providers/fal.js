@@ -72,12 +72,19 @@ function parseSubmit(json, ctx) {
   };
 }
 
+// 轮询时只保证有 jobId：没有提交时保存的地址就按模型 id 还原
 function buildStatus(ref) {
-  return { url: ref.statusUrl, headers: headers() };
+  return {
+    url: ref.statusUrl || BASE + '/' + ref.model + '/' + ref.providerJobId + '/status',
+    headers: headers()
+  };
 }
 
 function buildResult(ref) {
-  return { url: ref.resultUrl, headers: headers() };
+  return {
+    url: ref.resultUrl || BASE + '/' + ref.model + '/' + ref.providerJobId,
+    headers: headers()
+  };
 }
 
 function normalizeState(s) {

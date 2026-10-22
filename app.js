@@ -764,8 +764,9 @@
             finishRealGeneration(job, s, cost);
             return;
           }
-          if ((s && (s.state === 'failed' || s.state === 'canceled')) || Date.now() - started > BACKEND.maxWaitMs) {
-            failRealGeneration(cost);
+          var failedState = !!(s && (s.state === 'failed' || s.state === 'canceled'));
+          if (failedState || Date.now() - started > BACKEND.maxWaitMs) {
+            failRealGeneration(cost, !failedState);
             return;
           }
           if (s && s.state) phase = s.state;
@@ -809,12 +810,20 @@
       openPreviewModalByWork(0);
     }
 
-    function failRealGeneration(cost) {
+    function failRealGeneration(cost, timedOut) {
       hideProgressCard();
       // 服务端已预扣的任务由服务端退款；本地演示模式才在这里退
       if (appState.serverBilled) syncAccount();
       else refundCredits(cost);
-      showToast(appState.lang === 'zh'
+      var zh = appState.lang === 'zh';
+      if (timedOut && appState.serverBilled) {
+        // 超时不代表任务失败：后台可能仍在渲染，不能谎报已退款
+        showToast(zh
+          ? '等待时间超出预期，任务仍在后台处理：完成会自动进作品库，失败会自动退回积分'
+          : 'Taking longer than expected — the job is still running. It will appear in My Works when done, or refund automatically if it fails', 'error');
+        return;
+      }
+      showToast(zh
         ? '渲染失败，已按退款政策退回全部积分'
         : 'Render failed — full credit refund per our refund policy', 'error');
     }
@@ -848,6 +857,9 @@
       var createdMs = Date.parse(rec.createdAt);
       return {
         id: 'srv-' + rec.jobId,
+        status: rec.status || 'ready',
+        error: rec.error || '',
+        refunded: !!rec.refunded,
         title: wInfo[lang] + ' · ' + name1.split(' ')[0] + ' & ' + name2.split(' ')[0],
         worldKey: rec.world || 'city',
         worldLabel: wInfo[lang],
@@ -872,6 +884,12 @@
       });
     }
 
+    function escHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
     function renderWorksGrid() {
       var grid = document.getElementById('works-grid');
       var badge = document.getElementById('works-count-badge');
@@ -888,6 +906,34 @@
       }
       for (var i = 0; i < appState.works.length; i++) {
         var w = appState.works[i];
+        // 失败记录：明确展示「这次请求发生过但失败了」，并说明积分去向
+        if (w.status === 'failed') {
+          var fzh = appState.lang === 'zh';
+          html +=
+            '<div class="rounded-2xl border border-rose-500/40 bg-[var(--color-surface)] shadow-sm flex flex-col sm:flex-row gap-3 p-3">' +
+              '<div class="w-full sm:w-36 aspect-[9/16] rounded-xl bg-[var(--color-surface-hover)] shrink-0 flex items-center justify-center">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>' +
+              '</div>' +
+              '<div class="flex-1 flex flex-col justify-between py-1">' +
+                '<div class="space-y-1.5">' +
+                  '<div class="flex items-center gap-1.5">' +
+                    '<span class="px-2 py-0.5 rounded bg-rose-500/15 text-rose-400 text-[10px] font-bold">' + (fzh ? '失败' : 'FAILED') + '</span>' +
+                    '<span class="px-2 py-0.5 rounded bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] text-[10px] font-bold">' + w.resolution + '</span>' +
+                    '<span class="text-[11px] text-[var(--color-text-muted)]">' + w.createdAt + '</span>' +
+                  '</div>' +
+                  '<h3 class="text-sm font-bold text-[var(--color-text)]">' + w.title + '</h3>' +
+                  '<p class="text-xs text-[var(--color-text-muted)]">' + (fzh ? '这次渲染没有产出视频。' : 'This render produced no video.') + '</p>' +
+                  (w.error ? '<p class="text-[11px] text-[var(--color-text-muted)] break-words">' + escHtml(w.error) + '</p>' : '') +
+                  '<p class="text-[11px] font-medium ' + (w.refunded ? 'text-emerald-500' : 'text-amber-500') + '">' +
+                    (w.refunded
+                      ? (fzh ? ('已退回 ' + w.creditsCost + ' 积分') : ('Refunded ' + w.creditsCost + ' credits'))
+                      : (fzh ? '积分将自动退回' : 'Credits will be refunded automatically')) +
+                  '</p>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+          continue;
+        }
         html +=
           '<div class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden shadow-sm flex flex-col sm:flex-row gap-3 p-3">' +
             '<button type="button" onclick="openPreviewModalByWork(' + i + ')" class="relative w-full sm:w-36 aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 shrink-0 group">' +

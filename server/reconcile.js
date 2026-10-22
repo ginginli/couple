@@ -80,7 +80,13 @@ async function processKey(orderKey, opts) {
 
   let state;
   try {
-    state = await adapter.poll({ provider: ref.provider, providerJobId: ref.jobId });
+    state = await adapter.poll({
+      provider: ref.provider,
+      providerJobId: ref.jobId,
+      statusUrl: rec.statusUrl,
+      resultUrl: rec.resultUrl,
+      model: rec.model
+    });
   } catch (e) {
     console.error(JSON.stringify({ event: 'reconcile_poll_error', jobKey: orderKey, error: e.message }));
     return 'poll_error';
@@ -102,6 +108,12 @@ async function processKey(orderKey, opts) {
     if (!rec.refunded && rec.userId) {
       await credits.refundUser(rec.userId, rec.cost, 'job_' + state.state + '_reconcile');
       console.log(JSON.stringify({ event: 'reconcile_refunded', jobKey: orderKey, userId: rec.userId, credits: rec.cost }));
+    }
+    // 失败也要在作品库留痕（含补偿扫描路径）
+    if (rec.userId) {
+      await works.addFailed(rec.userId, works.failedRecord(
+        rec, ref.provider, ref.jobId, adapter.failureMessage(state.raw), true
+      ));
     }
     await credits.markOrder(orderKey, Object.assign({}, rec, {
       refunded: true,

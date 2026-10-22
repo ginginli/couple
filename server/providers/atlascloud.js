@@ -117,9 +117,15 @@ function buildRequest(input) {
       aspect_ratio: ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3'].indexOf(ar) !== -1 ? ar : '9:16'
     };
   } else {
+    // Atlas 硬限制 prompt ≤ 2500 字符，超出直接 ret:1201 失败（积分白扣）
+    let prompt = toAtlasPrompt(input.prompt);
+    if (prompt.length > 2500) {
+      console.warn(JSON.stringify({ event: 'prompt_truncated', provider: id, from: prompt.length, to: 2500 }));
+      prompt = prompt.slice(0, 2500);
+    }
     body = {
       model: model,
-      prompt: toAtlasPrompt(input.prompt),
+      prompt: prompt,
       // 传了参考视频时，Atlas 把参考图上限从 7 张降到 4 张（我们只用 2 张，始终安全）
       images: images.slice(0, refVideo ? 4 : 7),
       duration: clampDuration(input.duration, 15),
@@ -271,8 +277,14 @@ async function submit(input) {
   });
 }
 
+// 轮询入口只拿得到 jobId（/api/ai/status 与补偿扫描都不持有提交时的完整 ref），
+// 这里必须能从 jobId 还原状态地址，否则 fetch(undefined) 会让每次轮询都失败
+function statusUrlOf(ref) {
+  return ref.statusUrl || (BASE + STATUS_PATH + '/' + ref.providerJobId);
+}
+
 async function status(ref) {
-  const json = await http.get(ref.statusUrl, headers(), 15000, 1);
+  const json = await http.get(statusUrlOf(ref), headers(), 15000, 1);
   const parsed = parseStatus(json);
   
   // If completed, extract video URL from same response
@@ -287,7 +299,7 @@ async function status(ref) {
 }
 
 async function result(ref) {
-  const json = await http.get(ref.resultUrl, headers(), 20000, 1);
+  const json = await http.get(ref.resultUrl || statusUrlOf(ref), headers(), 20000, 1);
   return parseResult(json);
 }
 

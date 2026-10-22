@@ -26,6 +26,39 @@ async function add(userId, work) {
   return rec;
 }
 
+/** 失败也落一条记录：用户要能看到「这次请求确实发生了，但失败了」 */
+async function addFailed(userId, work) {
+  if (!userId || !work || !work.jobId) return null;
+  const doneKey = 'work:' + work.jobId;
+  if (await store.getJson(doneKey)) return null;
+  const rec = Object.assign({}, work, {
+    status: 'failed',
+    userId: userId,
+    savedAt: new Date().toISOString()
+  });
+  await store.setJson(doneKey, rec);
+  await store.push('works:u:' + userId, rec);
+  return rec;
+}
+
+/** 失败记录（无 videoUrl，带失败原因与退款状态） */
+function failedRecord(order, provider, jobId, error, refunded) {
+  return {
+    jobId: provider + ':' + jobId,
+    error: String(error || '').slice(0, 300),
+    world: order.world || 'city',
+    resolution: order.resolution || '720p',
+    role1: order.role1 || 'Image 1',
+    role2: order.role2 || 'Image 2',
+    lang: order.lang || 'en',
+    provider: provider,
+    model: order.model || null,
+    creditsCost: order.cost || 0,
+    refunded: !!refunded,
+    createdAt: new Date().toISOString()
+  };
+}
+
 /** 由订单记录 + provider 结果拼出作品记录（轮询与补偿扫描共用） */
 function workRecord(order, provider, jobId, videoUrl) {
   if (!order || !videoUrl) return null;
@@ -51,4 +84,4 @@ async function list(userId, limit) {
   return items.slice().reverse();
 }
 
-module.exports = { add, list, workRecord, MAX_WORKS };
+module.exports = { add, addFailed, list, workRecord, failedRecord, MAX_WORKS };

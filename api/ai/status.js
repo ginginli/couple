@@ -24,19 +24,28 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const state = await adapter.poll({ provider: provider, providerJobId: id });
+    // 轮询必须带上提交时登记的地址：adapter 只拿 jobId 时无法保证能还原 endpoint
+    const orderKey = 'job:' + provider + ':' + id;
+    const rec = await credits.orderDone(orderKey);
+    const state = await adapter.poll({
+      provider: provider,
+      providerJobId: id,
+      statusUrl: rec && rec.statusUrl,
+      resultUrl: rec && rec.resultUrl,
+      model: rec && rec.model
+    });
 
     // 渲染失败/取消：按提交时登记的归属自动退积分（幂等）
     let refunded = 0;
     let balance = null;
-    const orderKey = 'job:' + provider + ':' + id;
     if (state.state === 'failed' || state.state === 'canceled') {
-      const rec = await credits.orderDone(orderKey);
+      let wasRefunded = !!(rec && rec.refunded);
       if (rec && !rec.refunded && rec.userId) {
         const out = await credits.refundUser(rec.userId, rec.cost, 'job_' + state.state);
         if (out.ok) {
           refunded = rec.cost;
           balance = out.balance;
+          wasRefunded = true;
           await credits.markOrder(orderKey, Object.assign({}, rec, {
             refunded: true,
             completed: true,
@@ -48,8 +57,13 @@ module.exports = async function handler(req, res) {
       } else if (rec) {
         await reconcile.untrack(rec.userId, orderKey);
       }
+      // 失败也在作品库留痕：用户能看到「这次请求失败了」+ 积分是否退回
+      if (rec && rec.userId) {
+        await works.addFailed(rec.userId, works.failedRecord(
+          rec, provider, id, adapter.failureMessage(state.raw), wasRefunded
+        ));
+      }
     } else if (state.state === 'succeeded') {
-      const rec = await credits.orderDone(orderKey);
       if (rec) balance = await credits.balanceUser(rec.userId);
       // 成功后把成片落进用户作品库（幂等：同一 jobId 只写一次），
       // 否则刷新页面/换设备后前端内存里的作品列表就丢了

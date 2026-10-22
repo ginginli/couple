@@ -122,12 +122,19 @@ async function poll(ref) {
   };
 }
 
+/** 从 provider 原始响应里抠出可展示的失败原因（写入失败记录用） */
+function failureMessage(raw) {
+  const d = (raw && raw.data) || raw || {};
+  return String(d.error || d.message || d.msg || 'provider_failed').slice(0, 300);
+}
+
 module.exports = {
   PROVIDERS,
   PROVIDER,
   DEFAULT_CHAIN: [PROVIDER],
   normalizeInput,
   pickModelKey,
+  failureMessage,
   submit,
   poll
 };
