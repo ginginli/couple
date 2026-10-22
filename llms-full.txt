@@ -47,20 +47,19 @@ The result is a 13-second vertical (9:16) video with audio: tense heartbeat in s
 
 ## Credit & Pricing System
 
-### Credit Pricing (100%+ margin)
-- **720p**: 790 credits (~$3.95, cost ~$0.91)
-- **1080p**: 2,580 credits (~$12.90, cost ~$1.56)
+### Credit Pricing
+- **720p**: 1,580 credits ($7.90)
+- **1080p**: 3,280 credits ($15.90)
 
 ### Top-up Packs
 
 | Pack Name | Price (USD) | Credits | Best For |
 |-----------|-------------|---------|----------|
-| Starter | $7.90 | 1,580 | 2× 720p videos |
-| Popular | $12.90 | 2,580 | 1× 1080p or 3× 720p |
-| Pro | $19.90 | 3,980 | Multiple videos |
-| Enterprise | $49.90 | 9,980 | Heavy usage |
+| First Bite | $7.90 | 1,580 | 1× 720p video |
+| Double Date | $9.90 | 3,160 | 2× 720p videos |
+| Happy Ending | $15.90 | 5,080 | 1× 1080p + 1× 720p |
 
-**Note**: 1 credit = $0.005 USD. Credits never expire.
+**Note**: 1 credit = $0.005 USD. Credits never expire. Failed renders are refunded. No subscription. The $7.90 and $9.90 packs cannot afford a 1080p render (3,280 credits).
 
 ---
 
@@ -78,8 +77,8 @@ Select one of three settings:
 - 🛣️ Empty Highway
 
 ### Step 3: Select Resolution
-- 720p (790 credits) - Recommended
-- 1080p (2,580 credits) - High quality
+- 720p (1,580 credits) - $7.90
+- 1080p (3,280 credits) - $15.90
 
 ### Step 4: Generate
 Click "Generate Video" and wait ~4-5 minutes for processing.

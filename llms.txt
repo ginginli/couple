@@ -4,43 +4,65 @@
 
 **zombie-couple.xyz** - AI Zombie Couple Video Generator
 
-Turn two photos into a 13-second AI zombie love story: four shots, native audio, vertical 9:16, the same face. From $1.82.
+Turn two photos into a 13-second AI zombie love story: four shots, native audio, vertical 9:16, the same face in every shot. One 720p video from $7.90, one 1080p video from $15.90. No subscription.
 
 ## What This Site Does
 
-Upload two photos (your partner/pet + yourself), pick a world setting, and generate a cinematic zombie reunion video where the infected person charges at you and transforms into a warm hug on a sunny day.
+Upload two photos (your partner/pet/friend + yourself), pick a world setting, and generate a cinematic zombie reunion video: the infected person charges at you and the scene cuts to a warm hug on a sunny day. No prompt writing required.
 
 ## Key Features
 
-- 13-second four-shot narrative video
+- 13-second four-shot narrative video, vertical 9:16
 - Three world settings: Ruined City, Snowy Town, Empty Highway
-- Two resolutions: 720p, 1080p
-- Native stereo audio (heartbeat → piano)
-- Works with couples, friends, parents, and pets
+- Two resolutions: 720p and 1080p
+- Native stereo audio: heartbeat in shots 1-3, warm piano in shot 4
+- Two-photo upload feeding a single clip, faces kept recognisable
+- Works for couples, friends, parents and pets
 
-## Credit System
+## Credit Pricing (exact)
 
-Pay-per-use credits. No subscription. Prices:
-- 720p: 790 credits
-- 1080p: 2,580 credits
+- 1 credit = $0.005 USD. Credits never expire. Failed renders are refunded automatically. No subscription.
 
-Top-up packs:
-- $7.90 → 1,580 credits (2× 720p)
-- $12.90 → 2,580 credits (1× 1080p)
+| Item | Credits | Cash equivalent |
+|---|---|---|
+| One 720p video | 1,580 | $7.90 |
+| One 1080p video | 3,280 | $15.90 |
+| First Bite pack | 1,580 | $7.90 (1x 720p) |
+| Double Date pack | 3,160 | $9.90 (2x 720p) |
+| Happy Ending pack | 5,080 | $15.90 (1x 1080p + 1x 720p) |
+
+1080p is not reachable with the $7.90 or $9.90 packs.
 
 ## Important Pages
 
 - [Home](https://zombie-couple.xyz/)
 - [Chinese Version](https://zombie-couple.xyz/zh/)
+- [Alternatives comparison: Kling, Vidu, Pika, Runway](https://zombie-couple.xyz/alternatives.html)
+- [Alternatives (Chinese)](https://zombie-couple.xyz/zh/alternatives.html)
 - [Terms of Service](https://zombie-couple.xyz/terms.html)
 - [Privacy Policy](https://zombie-couple.xyz/privacy.html)
 - [Refund Policy](https://zombie-couple.xyz/refund.html)
 - [Contact](https://zombie-couple.xyz/contact.html)
 
-## Pricing
+## How To Use
 
-Starting from $1.82 (720p). See above for credit pack prices.
+1. Upload two clear, front-facing photos.
+2. Pick a world: Ruined City, Snowy Town or Empty Highway.
+3. Pick 720p (1,580 credits) or 1080p (3,280 credits).
+4. Wait about 3-4 minutes for the render.
 
-## API
+## Content Policy
 
-Developers can integrate via REST API. Contact for API access.
+- Adults (18+) only; minors are not allowed.
+- No non-consensual photos of other people.
+- No sexual or gory content; the gun is never fired and there is no blood.
+
+## Comparisons
+
+Dedicated zombie video tools in this category: zombie-couple.xyz, AI Zombie, AI Zombie Couple, Zombie Trend AI and Zombie Video. A row-by-row comparison (clip length, resolution, photos per clip, audio, orientation, advertised price) is at https://zombie-couple.xyz/alternatives.html
+
+zombie-couple.xyz is an independent product and is not affiliated with AI Zombie, AI Zombie Couple, Zombie Trend AI, Zombie Video, Kling AI, Vidu, Pika, Runway or any model provider. Rendering is powered by third-party AI video model providers.
+
+## Contact
+
+Support form: https://zombie-couple.xyz/contact.html
