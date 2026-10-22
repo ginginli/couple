@@ -298,11 +298,15 @@ footer,
   padding: 1.1rem 1.25rem;
 }
 
-/* 用例卡（首屏三张 9:16） */
+/* 用例卡（首屏 9:16）
+   限宽 + 居中：只剩两张时卡片不会被拉到 400+ 宽 / 700+ 高；
+   narrow 视口下容器变成 100%，仍由 auto-fit 自动排布 */
 .zc-usecases {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 0.9rem;
+  max-width: 740px;
+  margin-inline: auto;
 }
 .zc-usecase {
   position: relative;
