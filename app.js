@@ -1818,7 +1818,7 @@
 
     function downloadStoryboardJson() {
       var data = {
-        site: "https://zombie-couple.xyz",
+        site: "https://www.zombie-couple.xyz",
         template: "zombie-love-story",
         world: WORLD_MAP[appState.world],
         resolution: appState.resolution,

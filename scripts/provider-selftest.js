@@ -36,8 +36,8 @@ const INPUT = {
   prompt:
     'A 13-second four-shot zombie love story. @Image1 shuffles out of the fog, @Image2 lowers the gun, @Image1 sprints with open arms, then the same run becomes a laughing hug on a sunny day.',
   imageUrls: [
-    'https://zombie-couple.xyz/assets/scene-ruined-city.jpg',
-    'https://zombie-couple.xyz/assets/scene-snow-town.jpg'
+    'https://www.zombie-couple.xyz/assets/scene-ruined-city.jpg',
+    'https://www.zombie-couple.xyz/assets/scene-snow-town.jpg'
   ],
   duration: 13,
   aspectRatio: '9:16',

@@ -86,4 +86,4 @@ Allow: /
 User-agent: Diffbot
 Allow: /
 
-Sitemap: https://zombie-couple.xyz/sitemap.xml
+Sitemap: https://www.zombie-couple.xyz/sitemap.xml

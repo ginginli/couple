@@ -13,7 +13,7 @@ const WORLD_SETTINGS = {
 
 // 场景 → 参考视频（三条示例短片，页面上的卡片标题与之一一对应）。
 // 传给 Kling 的 video 字段，用来把场景/光线/运镜锁到示例短片。
-const ASSET_BASE = process.env.ASSET_BASE_URL || 'https://zombie-couple.xyz/assets';
+const ASSET_BASE = process.env.ASSET_BASE_URL || 'https://www.zombie-couple.xyz/assets';
 const WORLD_REF_VIDEO = {
   city: ASSET_BASE + '/videos/scene-ruined-city.mp4',
   highway: ASSET_BASE + '/videos/scene-highway.mp4'

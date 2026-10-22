@@ -7,7 +7,7 @@
 - **Name**: zombie-couple.xyz
 - **Tagline**: AI Zombie Couple Video Generator
 - **Description**: Turn two photos into a viral 13-second AI zombie love story with four cinematic shots
-- **Domain**: https://zombie-couple.xyz
+- **Domain**: https://www.zombie-couple.xyz
 - **Languages**: English (default), Chinese (zh-CN)
 - **Launch Date**: 2024
 

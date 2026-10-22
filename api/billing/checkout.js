@@ -26,7 +26,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const origin = (req.headers && req.headers['x-forwarded-proto'] ? req.headers['x-forwarded-proto'] + '://' + req.headers.host : null)
-      || 'https://zombie-couple.xyz';
+      || 'https://www.zombie-couple.xyz';
     const out = await billing.createCheckout({ packKey, userId: user.sub, email: user.email, origin });
     if (!out.ok) return res.status(502).json({ ok: false, error: out.error, details: out.raw || null });
     await credits.markOrder('checkout:' + out.checkoutId, { userId: user.sub, packKey: packKey, granted: false });

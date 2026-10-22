@@ -61,7 +61,7 @@ async function createCheckout({ packKey, userId, email, origin }) {
   const body = {
     product_id: productId,
     request_id: 'zc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-    success_url: (origin || 'https://zombie-couple.xyz') + '/?topup=success',
+    success_url: (origin || 'https://www.zombie-couple.xyz') + '/?topup=success',
     metadata: { userId: userId || '', packKey: packKey, credits: String(pack.credits) }
   };
   if (email) body.customer = { email: email };

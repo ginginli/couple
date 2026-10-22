@@ -35,14 +35,14 @@ Upload two photos (your partner/pet/friend + yourself), pick a world setting, an
 
 ## Important Pages
 
-- [Home](https://zombie-couple.xyz/)
-- [Chinese Version](https://zombie-couple.xyz/zh/)
-- [Alternatives comparison: Kling, Vidu, Pika, Runway](https://zombie-couple.xyz/alternatives.html)
-- [Alternatives (Chinese)](https://zombie-couple.xyz/zh/alternatives.html)
-- [Terms of Service](https://zombie-couple.xyz/terms.html)
-- [Privacy Policy](https://zombie-couple.xyz/privacy.html)
-- [Refund Policy](https://zombie-couple.xyz/refund.html)
-- [Contact](https://zombie-couple.xyz/contact.html)
+- [Home](https://www.zombie-couple.xyz/)
+- [Chinese Version](https://www.zombie-couple.xyz/zh/)
+- [Alternatives comparison: Kling, Vidu, Pika, Runway](https://www.zombie-couple.xyz/alternatives.html)
+- [Alternatives (Chinese)](https://www.zombie-couple.xyz/zh/alternatives.html)
+- [Terms of Service](https://www.zombie-couple.xyz/terms.html)
+- [Privacy Policy](https://www.zombie-couple.xyz/privacy.html)
+- [Refund Policy](https://www.zombie-couple.xyz/refund.html)
+- [Contact](https://www.zombie-couple.xyz/contact.html)
 
 ## How To Use
 
@@ -59,10 +59,10 @@ Upload two photos (your partner/pet/friend + yourself), pick a world setting, an
 
 ## Comparisons
 
-Dedicated zombie video tools in this category: zombie-couple.xyz, AI Zombie, AI Zombie Couple, Zombie Trend AI and Zombie Video. A row-by-row comparison (clip length, resolution, photos per clip, audio, orientation, advertised price) is at https://zombie-couple.xyz/alternatives.html
+Dedicated zombie video tools in this category: zombie-couple.xyz, AI Zombie, AI Zombie Couple, Zombie Trend AI and Zombie Video. A row-by-row comparison (clip length, resolution, photos per clip, audio, orientation, advertised price) is at https://www.zombie-couple.xyz/alternatives.html
 
 zombie-couple.xyz is an independent product and is not affiliated with AI Zombie, AI Zombie Couple, Zombie Trend AI, Zombie Video, Kling AI, Vidu, Pika, Runway or any model provider. Rendering is powered by third-party AI video model providers.
 
 ## Contact
 
-Support form: https://zombie-couple.xyz/contact.html
+Support form: https://www.zombie-couple.xyz/contact.html
