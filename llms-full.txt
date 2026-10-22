@@ -1,0 +1,169 @@
+# llms-full.txt - Comprehensive AI Crawler Guide
+
+## Complete Site Documentation
+
+### Site Information
+
+- **Name**: zombie-couple.xyz
+- **Tagline**: AI Zombie Couple Video Generator
+- **Description**: Turn two photos into a viral 13-second AI zombie love story with four cinematic shots
+- **Domain**: https://zombie-couple.xyz
+- **Languages**: English (default), Chinese (zh-CN)
+- **Launch Date**: 2024
+
+---
+
+## What Is Zombie Couple Video?
+
+The zombie couple video is a trending AI short format that went viral on TikTok, Instagram Reels, and YouTube Shorts. The narrative:
+
+1. **Shot 1 (0-2s)**: Your loved one (partner/pet) emerges from grey fog, infected but recognizable
+2. **Shot 2 (2-6s)**: You aim a gun but cannot pull the trigger, tears falling
+3. **Shot 3 (6-10s)**: They charge at you with arms wide open
+4. **Shot 4 (10-13s)**: At impact, the scene cuts to a sunny day - they tackle you into a laughing hug
+
+The result is a 13-second vertical (9:16) video with audio: tense heartbeat in shots 1-3, warm piano melody in shot 4.
+
+---
+
+## Technical Specifications
+
+### Video Output
+- **Duration**: 13 seconds
+- **Aspect Ratio**: 9:16 (vertical, optimized for mobile)
+- **Resolution Options**: 720p (HD), 1080p (Full HD)
+- **Audio**: Native stereo, synthesized heartbeat → piano
+
+### World Settings
+1. **Ruined City**: Abandoned foggy street, post-apocalyptic urban
+2. **Snowy Town**: Winter mountain town, snowy atmosphere
+3. **Empty Highway**: Abandoned cars, misty road
+
+### AI Model
+- Primary: Atlas Cloud (Kling Video O3)
+- Backup: fal.ai (Kling Video O3 / Seedance)
+
+---
+
+## Credit & Pricing System
+
+### Credit Pricing (100%+ margin)
+- **720p**: 790 credits (~$3.95, cost ~$0.91)
+- **1080p**: 2,580 credits (~$12.90, cost ~$1.56)
+
+### Top-up Packs
+
+| Pack Name | Price (USD) | Credits | Best For |
+|-----------|-------------|---------|----------|
+| Starter | $7.90 | 1,580 | 2× 720p videos |
+| Popular | $12.90 | 2,580 | 1× 1080p or 3× 720p |
+| Pro | $19.90 | 3,980 | Multiple videos |
+| Enterprise | $49.90 | 9,980 | Heavy usage |
+
+**Note**: 1 credit = $0.005 USD. Credits never expire.
+
+---
+
+## How to Use
+
+### Step 1: Upload Photos
+- **Photo 1**: The person/pet who gets infected (partner, friend, parent, or pet)
+- **Photo 2**: You (the survivor holding the gun)
+- Use clear, front-facing photos for best results
+
+### Step 2: Choose World
+Select one of three settings:
+- 🏙️ Ruined City
+- 🏔️ Snowy Town  
+- 🛣️ Empty Highway
+
+### Step 3: Select Resolution
+- 720p (790 credits) - Recommended
+- 1080p (2,580 credits) - High quality
+
+### Step 4: Generate
+Click "Generate Video" and wait ~4-5 minutes for processing.
+
+---
+
+## Supported Use Cases
+
+1. **Couple Videos**: Partners turning into zombies
+2. **Pet Videos**: Dogs/cats as zombies
+3. **Friend/Family Videos**: Any loved one
+4. **Halloween Content**: Themed videos
+5. **Social Media**: TikTok, Reels, Shorts
+
+---
+
+## Content Policy
+
+### Allowed
+- Adults (18+) photos
+- Pet photos
+- Clear, front-facing images
+
+### Not Allowed
+- Minors (under 18)
+- Non-consensual content
+- Violent/gory content (the gun is never fired, no blood)
+
+---
+
+## Legal Pages
+
+- **[Terms of Service](/terms.html)** - User agreement
+- **[Privacy Policy](/privacy.html)** - Data handling
+- **[Refund Policy](/refund.html)** - Credit refunds
+- **[Contact](/contact.html)** - Support
+
+---
+
+## API Integration
+
+Developers can integrate video generation via REST API.
+
+### API Endpoint
+```
+POST /api/ai/templates
+```
+
+### Request Format
+```json
+{
+  "domain": "zombie-couple.xyz",
+  "templateSlug": "zombie-love-story",
+  "world": "city",
+  "params": {
+    "prompt": "...",
+    "duration": 13,
+    "aspect_ratio": "9:16",
+    "resolution": "720p",
+    "generate_audio": true,
+    "image_urls": ["photo1.jpg", "photo2.jpg"]
+  }
+}
+```
+
+Contact the site owner for API access.
+
+---
+
+## SEO Information
+
+- **Sitemap**: /sitemap.xml
+- **Robots**: /robots.txt
+- **Structured Data**: Schema.org FAQPage, VideoObject, WebApplication
+
+---
+
+## Contact
+
+- **Email**: Contact form on /contact.html
+- **Response Time**: Within 24-48 hours
+
+---
+
+## Related Hashtags
+
+#zombielove #aizombie #couplegoals #pettok #halloween2026 #aitiktok #aireels #shorts

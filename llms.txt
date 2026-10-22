@@ -1,0 +1,46 @@
+# llms.txt - AI Crawler Guide for zombie-couple.xyz
+
+## Site Overview
+
+**zombie-couple.xyz** - AI Zombie Couple Video Generator
+
+Turn two photos into a 13-second AI zombie love story: four shots, native audio, vertical 9:16, the same face. From $1.82.
+
+## What This Site Does
+
+Upload two photos (your partner/pet + yourself), pick a world setting, and generate a cinematic zombie reunion video where the infected person charges at you and transforms into a warm hug on a sunny day.
+
+## Key Features
+
+- 13-second four-shot narrative video
+- Three world settings: Ruined City, Snowy Town, Empty Highway
+- Two resolutions: 720p, 1080p
+- Native stereo audio (heartbeat → piano)
+- Works with couples, friends, parents, and pets
+
+## Credit System
+
+Pay-per-use credits. No subscription. Prices:
+- 720p: 790 credits
+- 1080p: 2,580 credits
+
+Top-up packs:
+- $7.90 → 1,580 credits (2× 720p)
+- $12.90 → 2,580 credits (1× 1080p)
+
+## Important Pages
+
+- [Home](https://zombie-couple.xyz/)
+- [Chinese Version](https://zombie-couple.xyz/zh/)
+- [Terms of Service](https://zombie-couple.xyz/terms.html)
+- [Privacy Policy](https://zombie-couple.xyz/privacy.html)
+- [Refund Policy](https://zombie-couple.xyz/refund.html)
+- [Contact](https://zombie-couple.xyz/contact.html)
+
+## Pricing
+
+Starting from $1.82 (720p). See above for credit pack prices.
+
+## API
+
+Developers can integrate via REST API. Contact for API access.
