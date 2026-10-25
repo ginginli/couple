@@ -12,16 +12,24 @@ const reconcile = require('../../server/reconcile');
 const adapter = require('../../server/provider-adapter');
 const credits = require('../../server/credits');
 
+// 与 cron 一致：没配 ADMIN_TOKEN 时允许用 CRON_SECRET，避免项目里缺 ADMIN_TOKEN 就完全无法补跑
+function adminSecret() {
+  return process.env.ADMIN_TOKEN || process.env.CRON_SECRET || '';
+}
+
 function authorized(req) {
-  const secret = process.env.ADMIN_TOKEN || '';
+  const secret = adminSecret();
   if (!secret) return false;
-  const got = (req.headers && req.headers['x-admin-token']) || (req.query && req.query.token) || '';
+  const got = (req.headers && req.headers['x-admin-token'])
+    || (req.headers && req.headers['x-cron-secret'])
+    || (req.query && req.query.token)
+    || '';
   return String(got) === secret;
 }
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
-  if (!process.env.ADMIN_TOKEN) return res.status(501).json({ ok: false, error: 'admin_disabled' });
+  if (!adminSecret()) return res.status(501).json({ ok: false, error: 'admin_disabled' });
   if (!authorized(req)) return res.status(401).json({ ok: false, error: 'bad_token' });
   if (req.method !== 'GET' && req.method !== 'POST') {
     res.setHeader('Allow', 'GET, POST');

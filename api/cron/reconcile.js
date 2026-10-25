@@ -24,8 +24,10 @@ module.exports = async function handler(req, res) {
 
   try {
     const out = await reconcile.reconcileAll(10);
-    console.log(JSON.stringify(Object.assign({ event: 'reconcile_cron' }, out)));
-    return res.status(200).json(Object.assign({ ok: true }, out));
+    // 待查列表可能因部署时序缺失：顺带扫描所有未终态订单，避免任务被永久搁置
+    const repair = await reconcile.repairStuck(10);
+    console.log(JSON.stringify(Object.assign({ event: 'reconcile_cron', repair: repair }, out)));
+    return res.status(200).json(Object.assign({ ok: true, repair: repair }, out));
   } catch (e) {
     console.error(JSON.stringify({ event: 'reconcile_cron_failed', error: e.message }));
     return res.status(500).json({ ok: false, error: e.message });

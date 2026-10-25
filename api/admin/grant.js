@@ -12,8 +12,13 @@ const auth = require('../../server/auth');
 const credits = require('../../server/credits');
 const billing = require('../../server/billing');
 
+// 项目未配置 ADMIN_TOKEN 时回退到 CRON_SECRET，避免后台接口整体不可用
+function adminSecret() {
+  return process.env.ADMIN_TOKEN || process.env.CRON_SECRET || '';
+}
+
 function authorized(req) {
-  const secret = process.env.ADMIN_TOKEN || '';
+  const secret = adminSecret();
   if (!secret) return false;
   const got = (req.headers && req.headers['x-admin-token']) || (req.query && req.query.token) || '';
   return String(got) === secret;
@@ -21,7 +26,7 @@ function authorized(req) {
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
-  if (!process.env.ADMIN_TOKEN) return res.status(501).json({ ok: false, error: 'admin_disabled' });
+  if (!adminSecret()) return res.status(501).json({ ok: false, error: 'admin_disabled' });
   if (!authorized(req)) return res.status(401).json({ ok: false, error: 'bad_token' });
 
   // 查询待认领
