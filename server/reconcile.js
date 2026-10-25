@@ -6,7 +6,7 @@
  *
  * 做法：
  *   - 提交成功后把订单 key 登记进待查列表（全局 + 按用户各一份）
- *   - 用户回来登录时（/api/account/reconcile）只查自己的待办
+ *   - 用户回来登录时（POST /api/account/me?action=reconcile）只查自己的待办
  *   - Vercel Cron（/api/cron/reconcile）定期扫全局，兜底没人回来的情况
  *
  * 列表：

@@ -1042,6 +1042,55 @@
       }
     }
 
+    // ===== Dialog accessibility: focus restore, Escape to close, focus trap =====
+    var lastFocusedEl = null;
+    var activeModalEl = null;
+
+    function openModalA11y(modal) {
+      if (!modal) return;
+      lastFocusedEl = document.activeElement;
+      activeModalEl = modal;
+      modal.classList.remove('hidden');
+      var target = modal.querySelector('[data-modal-initial-focus]') ||
+        modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (target) target.focus();
+    }
+
+    function closeModalA11y(modal) {
+      if (!modal) return;
+      modal.classList.add('hidden');
+      if (activeModalEl === modal) activeModalEl = null;
+      if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') lastFocusedEl.focus();
+      lastFocusedEl = null;
+    }
+
+    document.addEventListener('keydown', function (event) {
+      if (!activeModalEl) return;
+      if (event.key === 'Escape' || event.key === 'Esc') {
+        event.preventDefault();
+        if (activeModalEl.id === 'cinema-modal') closePreviewModal();
+        else if (activeModalEl.id === 'topup-modal') closeTopupModal();
+        else if (activeModalEl.id === 'api-modal') closeApiModal();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      var candidates = activeModalEl.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])');
+      var visible = [];
+      for (var i = 0; i < candidates.length; i++) {
+        if (candidates[i].offsetParent !== null) visible.push(candidates[i]);
+      }
+      if (!visible.length) return;
+      var first = visible[0];
+      var last = visible[visible.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+
     function openPreviewModal(exampleIndex) {
       var worldKeys = ['city', 'highway'];
       var wKey = worldKeys[exampleIndex] || 'city';
@@ -1054,7 +1103,7 @@
       document.getElementById('player-meta-badge').textContent = appState.resolution + ' · 9:16 · Multiple SOTA models';
 
       var modal = document.getElementById('cinema-modal');
-      modal.classList.remove('hidden');
+      openModalA11y(modal);
       appState.player.isOpen = true;
       appState.player.currentTime = 0;
       appState.player.lastBeatTime = -1;
@@ -1073,7 +1122,7 @@
         w.resolution + ' · 9:16 · Multiple SOTA models';
 
       var modal = document.getElementById('cinema-modal');
-      modal.classList.remove('hidden');
+      openModalA11y(modal);
       appState.player.isOpen = true;
       appState.player.currentTime = 0;
       appState.player.lastBeatTime = -1;
@@ -1193,7 +1242,7 @@
       var v = document.getElementById('cinema-real-video');
       if (v) { v.pause(); v.classList.add('hidden'); v.removeAttribute('src'); }
       var modal = document.getElementById('cinema-modal');
-      if (modal) modal.classList.add('hidden');
+      if (modal) closeModalA11y(modal);
       appState.player.isOpen = false;
     }
 
@@ -1348,11 +1397,19 @@
         panelWorks.classList.remove('hidden');
         btnWorks.className = 'zc-tab is-active';
         btnTut.className = 'zc-tab';
+        btnWorks.setAttribute('aria-selected', 'true');
+        btnTut.setAttribute('aria-selected', 'false');
+        btnWorks.setAttribute('tabindex', '0');
+        btnTut.setAttribute('tabindex', '-1');
       } else {
         panelWorks.classList.add('hidden');
         panelTut.classList.remove('hidden');
         btnTut.className = 'zc-tab is-active';
         btnWorks.className = 'zc-tab';
+        btnTut.setAttribute('aria-selected', 'true');
+        btnWorks.setAttribute('aria-selected', 'false');
+        btnTut.setAttribute('tabindex', '0');
+        btnWorks.setAttribute('tabindex', '-1');
       }
     }
 
@@ -1396,7 +1453,7 @@
     }
 
     function openTopupModal(neededCredits) {
-      document.getElementById('topup-modal').classList.remove('hidden');
+      openModalA11y(document.getElementById('topup-modal'));
       // 余额不足时预选“够用的最小包”，否则默认 Popular
       var packs = [1580, 3160, 5080];
       var picked = 3160;
@@ -1460,7 +1517,7 @@
     }
 
     function closeTopupModal() {
-      document.getElementById('topup-modal').classList.add('hidden');
+      closeModalA11y(document.getElementById('topup-modal'));
     }
 
     // PayPal 支付链接（No-Code Payment）：下单后需人工核对到账再补积分
@@ -1506,7 +1563,7 @@
       var now = Date.now();
       if (now - lastReconcileAt < 90000) return Promise.resolve(null);
       lastReconcileAt = now;
-      return fetch('/api/account/reconcile', { method: 'POST', credentials: 'same-origin' })
+      return fetch('/api/account/me?action=reconcile', { method: 'POST', credentials: 'same-origin' })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           if (j && j.changed > 0) return syncAccount();
@@ -1776,11 +1833,11 @@
     function openApiModal() {
       if (!isDebugMode()) return;
       updateApiSnippetUI();
-      document.getElementById('api-modal').classList.remove('hidden');
+      openModalA11y(document.getElementById('api-modal'));
     }
 
     function closeApiModal() {
-      document.getElementById('api-modal').classList.add('hidden');
+      closeModalA11y(document.getElementById('api-modal'));
     }
 
     function saveApiEndpoint() {
