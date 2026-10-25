@@ -467,8 +467,8 @@
       // 只放个假进度条、造一张没有 videoUrl 的卡片，真实请求根本不会发出
       enabled: true,
       pollIntervalMs: 5000,
-      // Atlas 实测 13 秒片约 220 秒出片，超时给足余量
-      maxWaitMs: 8 * 60 * 1000
+      // Atlas 实测 13 秒片最长约 7 分 18 秒出片（437 秒），留足余量到 15 分钟
+      maxWaitMs: 15 * 60 * 1000
     };
 
     function startZombieGeneration() {
