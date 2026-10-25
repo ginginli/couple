@@ -24,6 +24,11 @@
         sampleSurvivorSlot: 'Survivor Chen Mo (@Image2)',
         playClip: '▶ Play the 13s clip',
         downloadVideo: 'Download video',
+        requestRefund: 'Request refund',
+        refundSending: 'Sending…',
+        refundSubmitOk: '✅ Refund request sent — we will review it manually and reply by email',
+        refundSubmitErr: 'Send failed. Please try again, or use the email link below.',
+        refundInvalidEmail: 'Please enter the valid email you used at checkout',
         signInGoogle: 'Sign in with Google',
         signOut: 'Sign out',
         loginRequired: 'Please sign in with Google to generate',
@@ -69,6 +74,11 @@
         sampleSurvivorSlot: '幸存者陈默 (@Image2)',
         playClip: '▶ 播放 13 秒成片',
         downloadVideo: '下载视频',
+        requestRefund: '申请退款',
+        refundSending: '发送中…',
+        refundSubmitOk: '✅ 退款申请已提交，我们会人工审核并通过邮件回复你',
+        refundSubmitErr: '发送失败，请重试，或使用下方邮件链接手动申请',
+        refundInvalidEmail: '请填写有效的付款邮箱',
         signInGoogle: '用 Google 登录',
         signOut: '退出登录',
         loginRequired: '请先登录再生成',
@@ -719,7 +729,6 @@
       var progBar = document.getElementById('gen-progress-bar');
       var timerBadge = document.getElementById('gen-timer-badge');
       var statusTitle = document.getElementById('gen-status-title');
-      var modelLabel = job.model || job.provider;
       var phase = 'queued';
       // 渲染一般 3-4 分钟；超过 150 秒就把文案从“渲染中”换成“快好了”
       var ALMOST_DONE_MS = 150000;
@@ -729,6 +738,7 @@
       }
 
       // 只按真实阶段推进：排队 -> 渲染 -> 快好了，不再伪装成百分比
+      // 不展示上游模型路径：对用户是噪音，也避免暴露供应商技术栈
       function paint() {
         var sec = elapsedSeconds();
         if (timerBadge) timerBadge.textContent = sec + 's';
@@ -737,13 +747,9 @@
           if (phase === 'queued') {
             statusTitle.textContent = zh ? '排队中…' : 'Queued…';
           } else if (sec * 1000 >= ALMOST_DONE_MS) {
-            statusTitle.textContent = zh
-              ? ('快好了 · ' + modelLabel)
-              : ('Almost done · ' + modelLabel);
+            statusTitle.textContent = zh ? '快好了…' : 'Almost done…';
           } else {
-            statusTitle.textContent = zh
-              ? ('渲染中 · ' + modelLabel)
-              : ('Rendering · ' + modelLabel);
+            statusTitle.textContent = zh ? '渲染中…' : 'Rendering…';
           }
         }
         if (progBar) {
@@ -789,6 +795,8 @@
       var wInfo = WORLD_MAP[appState.world];
       var newWork = {
         id: 'work-' + Date.now(),
+        jobId: (job.provider && job.jobId) ? job.provider + ':' + job.jobId : '',
+        createdMs: Date.now(),
         title: wInfo[appState.lang] + ' · ' + appState.slot1.name.split(' ')[0] + ' & ' + appState.slot2.name.split(' ')[0],
         worldKey: appState.world,
         worldLabel: wInfo[appState.lang],
@@ -797,7 +805,7 @@
         role1: appState.slot1.name,
         role2: appState.slot2.name,
         coverSrc: wInfo.cover,
-        videoUrl: s.videoUrl,
+        videoUrl: cleanMediaUrl(s.videoUrl),
         provider: job.provider,
         modelLabel: job.model,
         expiresAt: Date.now() + LINK_TTL_MS,
@@ -835,6 +843,35 @@
 
     // 成片链接由上游托管，按 7 天保守提示（Atlas 默认 14 天，取更短的提醒更安全）
     var LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+    // 不满意退款窗口：渲染完成后 24 小时内可申请（与 refund.html 政策一致，人工审核）
+    var REFUND_WINDOW_MS = 24 * 60 * 60 * 1000;
+    var REFUND_EMAIL = 'ladyiney25@gmail.com';
+    // EmailJS 配置：用户提交退款申请后自动发信到站长邮箱。
+    // 在 https://dashboard.emailjs.com 建好 service + template 后替换下面三个值，
+    // 模板变量：order_ref / checkout_email / resolution / finished_at / reason / site
+    var EMAILJS_PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY';
+    var EMAILJS_SERVICE_ID = 'YOUR_EMAILJS_SERVICE_ID';
+    var EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
+
+    function emailJsConfigured() {
+      return EMAILJS_PUBLIC_KEY.indexOf('YOUR_') !== 0
+        && EMAILJS_SERVICE_ID.indexOf('YOUR_') !== 0
+        && EMAILJS_TEMPLATE_ID.indexOf('YOUR_') !== 0;
+    }
+
+    // 同一任务只允许提交一次（按浏览器记，防重复刷屏）
+    function refundRequested(ref) {
+      try { return !!localStorage.getItem('zc-refund-req:' + ref); } catch (e) { return false; }
+    }
+
+    function markRefundRequested(ref) {
+      try { localStorage.setItem('zc-refund-req:' + ref, String(Date.now())); } catch (e) {}
+    }
+
+    function refundEligible(w) {
+      if (!w || !w.videoUrl || !w.createdMs || (Date.now() - w.createdMs >= REFUND_WINDOW_MS)) return false;
+      return !refundRequested(w.jobId || w.id);
+    }
 
     function linkExpiryText(w) {
       if (!w.videoUrl || !w.expiresAt) return '';
@@ -857,6 +894,8 @@
       var createdMs = Date.parse(rec.createdAt);
       return {
         id: 'srv-' + rec.jobId,
+        jobId: rec.jobId || '',
+        createdMs: isNaN(createdMs) ? 0 : createdMs,
         status: rec.status || 'ready',
         error: rec.error || '',
         refunded: !!rec.refunded,
@@ -868,7 +907,7 @@
         role1: name1,
         role2: name2,
         coverSrc: wInfo.cover,
-        videoUrl: rec.videoUrl,
+        videoUrl: cleanMediaUrl(rec.videoUrl),
         provider: rec.provider,
         modelLabel: rec.model || '',
         expiresAt: isNaN(createdMs) ? Date.now() + LINK_TTL_MS : createdMs + LINK_TTL_MS,
@@ -882,6 +921,13 @@
       return d.toLocaleString(appState.lang === 'zh' ? 'zh-CN' : 'en-US', {
         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
       });
+    }
+
+    // 上游/历史数据里的 URL 可能带空白、反引号或引号，直接塞进 src 会解析成相对路径
+    function cleanMediaUrl(u) {
+      if (typeof u !== 'string') return '';
+      var s = u.trim().replace(/^[\s`'"]+/, '').replace(/[\s`'"]+$/, '');
+      return /^https?:\/\//i.test(s) ? s : '';
     }
 
     function escHtml(s) {
@@ -937,9 +983,9 @@
         html +=
           '<div class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden shadow-sm flex flex-col sm:flex-row gap-3 p-3">' +
             '<button type="button" onclick="openPreviewModalByWork(' + i + ')" class="relative w-full sm:w-36 aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 shrink-0 group">' +
-              '<img src="' + w.coverSrc + '" alt="' + w.title + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />' +
+              '<img src="' + escHtml(w.coverSrc) + '" alt="' + escHtml(w.title) + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />' +
               (w.videoUrl
-                ? '<video src="' + w.videoUrl + '" poster="' + w.coverSrc + '" muted loop playsinline preload="metadata" data-autoplay-video tabindex="-1" aria-hidden="true" class="w-full h-full object-cover"></video>'
+                ? '<video src="' + escHtml(w.videoUrl) + '" poster="' + escHtml(w.coverSrc) + '" muted loop playsinline preload="metadata" data-autoplay-video tabindex="-1" aria-hidden="true" class="w-full h-full object-cover" onerror="this.style.display=\'none\'"></video>'
                 : '') +
               '<div class="absolute inset-0 bg-black/35 flex items-center justify-center">' +
                 '<div class="w-10 h-10 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg">' +
@@ -966,7 +1012,10 @@
                   t('playClip') +
                 '</button>' +
                 (w.videoUrl
-                  ? '<a href="' + w.videoUrl + '" download target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)] text-[var(--color-text)] text-xs font-semibold transition-colors">' + t('downloadVideo') + '</a>'
+                  ? '<a href="' + escHtml(w.videoUrl) + '" download target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)] text-[var(--color-text)] text-xs font-semibold transition-colors">' + t('downloadVideo') + '</a>'
+                  : '') +
+                (refundEligible(w)
+                  ? '<button type="button" onclick="openRefundModal(' + i + ')" aria-haspopup="dialog" class="inline-flex items-center px-2 min-h-[48px] text-[var(--color-text-muted)] hover:text-rose-400 text-xs font-semibold underline decoration-dotted underline-offset-4 transition-colors">' + t('requestRefund') + '</button>'
                   : '') +
               '</div>' +
             '</div>' +
@@ -1071,6 +1120,7 @@
         if (activeModalEl.id === 'cinema-modal') closePreviewModal();
         else if (activeModalEl.id === 'topup-modal') closeTopupModal();
         else if (activeModalEl.id === 'api-modal') closeApiModal();
+        else if (activeModalEl.id === 'refund-modal') closeRefundModal();
         return;
       }
       if (event.key !== 'Tab') return;
@@ -1128,6 +1178,124 @@
       appState.player.lastBeatTime = -1;
       appState.player.pianoPlayed = false;
       showPlayerMedia(w.videoUrl, w.coverSrc);
+    }
+
+    // 退款申请弹窗：用户填付款邮箱 + 原因直接提交，EmailJS 自动发信到站长邮箱（mailto 兜底）
+    var emailJsPromise = null;
+
+    function loadEmailJs() {
+      if (window.emailjs && typeof window.emailjs.send === 'function') return Promise.resolve();
+      if (!emailJsPromise) {
+        emailJsPromise = new Promise(function (resolve, reject) {
+          var s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+          s.onload = function () {
+            window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+            resolve();
+          };
+          s.onerror = function () {
+            emailJsPromise = null;
+            reject(new Error('emailjs_load_failed'));
+          };
+          document.head.appendChild(s);
+        });
+      }
+      return emailJsPromise;
+    }
+
+    function setRefundStatus(msg, isError) {
+      var el = document.getElementById('refund-form-status');
+      if (!el) return;
+      el.textContent = msg || '';
+      el.classList.toggle('text-rose-400', !!isError);
+      el.classList.toggle('text-[var(--color-text-muted)]', !isError);
+    }
+
+    function openRefundModal(workIndex) {
+      var w = appState.works[workIndex];
+      if (!w) return;
+      var zh = appState.lang === 'zh';
+      var modal = document.getElementById('refund-modal');
+      var ref = w.jobId || w.id;
+      var deadline = new Date((w.createdMs || Date.now()) + REFUND_WINDOW_MS);
+      modal.dataset.workIndex = String(workIndex);
+      document.getElementById('refund-task-ref').textContent = ref;
+      document.getElementById('refund-deadline').textContent = deadline.toLocaleString(zh ? 'zh-CN' : 'en-US', {
+        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+
+      // 预填登录邮箱作为付款邮箱；原因与状态每次重置
+      var emailInput = document.getElementById('refund-email-input');
+      if (emailInput && !emailInput.value && appState.user && appState.user.email) {
+        emailInput.value = appState.user.email;
+      }
+      var reasonInput = document.getElementById('refund-reason-input');
+      if (reasonInput) reasonInput.value = '';
+      var submitBtn = document.getElementById('refund-submit-btn');
+      if (submitBtn) submitBtn.disabled = false;
+      setRefundStatus('', false);
+
+      // 兜底：自动发信不可用时，用户仍可点这个预填好的邮件链接手动申请
+      var subject = zh ? ('退款申请 - ' + ref) : ('Refund request - ' + ref);
+      var body = [
+        (zh ? '订单/任务编号：' : 'Order / task reference: ') + ref,
+        (zh ? '清晰度：' : 'Resolution: ') + w.resolution,
+        (zh ? '完成时间：' : 'Finished at: ') + (w.createdMs ? new Date(w.createdMs).toISOString() : ''),
+        '',
+        zh ? '付款时使用的邮箱（必填）：' : 'Email used at checkout (required): ',
+        zh ? '退款原因（简单说明即可）：' : 'Reason (brief): '
+      ].join('\n');
+      document.getElementById('refund-mailto').href =
+        'mailto:' + REFUND_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+
+      openModalA11y(modal);
+    }
+
+    function closeRefundModal() {
+      closeModalA11y(document.getElementById('refund-modal'));
+    }
+
+    function submitRefundRequest() {
+      var modal = document.getElementById('refund-modal');
+      var w = appState.works[Number(modal.dataset.workIndex)];
+      if (!w) return;
+      var ref = w.jobId || w.id;
+      var email = (document.getElementById('refund-email-input').value || '').trim();
+      var reason = (document.getElementById('refund-reason-input').value || '').trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setRefundStatus(t('refundInvalidEmail'), true);
+        return;
+      }
+
+      var submitBtn = document.getElementById('refund-submit-btn');
+      // EmailJS 未配置时退回 mailto（密钥还没填的情况）
+      if (!emailJsConfigured()) {
+        document.getElementById('refund-mailto').click();
+        return;
+      }
+
+      submitBtn.disabled = true;
+      setRefundStatus(t('refundSending'), false);
+      loadEmailJs().then(function () {
+        return window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+          to_email: REFUND_EMAIL,
+          reply_to: email,
+          checkout_email: email,
+          order_ref: ref,
+          resolution: w.resolution,
+          finished_at: w.createdMs ? new Date(w.createdMs).toISOString() : '',
+          reason: reason || '(not provided)',
+          site: location.host
+        });
+      }).then(function () {
+        markRefundRequested(ref);
+        closeRefundModal();
+        renderWorksGrid(); // 该任务的退款入口随即隐藏
+        showToast(t('refundSubmitOk'));
+      }).catch(function () {
+        submitBtn.disabled = false;
+        setRefundStatus(t('refundSubmitErr'), true);
+      });
     }
 
     // 播放器媒体切换：有真实视频就播视频，没有就退回动画模拟
@@ -1233,6 +1401,19 @@
         if (icon) icon.textContent = '▶';
       });
       el.addEventListener('volumechange', syncAudioButton);
+      el.addEventListener('error', function () {
+        if (!el.getAttribute('src')) return;
+        console.error('[zc] video load failed:', el.currentSrc || el.getAttribute('src'));
+        el.classList.add('hidden');
+        el.removeAttribute('src');
+        var imgEl = document.getElementById('player-main-img');
+        if (imgEl) imgEl.classList.remove('hidden');
+        ['player-fog-overlay', 'player-warm-overlay', 'player-flash-overlay'].forEach(function (id) {
+          var n = document.getElementById(id);
+          if (n) n.classList.remove('hidden');
+        });
+        showToast(appState.lang === 'zh' ? '视频加载失败，请稍后重试或使用下载按钮' : 'Video failed to load — try the download button', 'error');
+      });
       stage.parentNode.insertBefore(el, stage);
       return el;
     }

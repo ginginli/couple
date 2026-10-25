@@ -12,9 +12,18 @@ const store = require('./store');
 
 const MAX_WORKS = 30;
 
+/** 上游返回的 URL 可能带空白/反引号/引号，直接拼进 src 会让播放器解析失败 */
+function cleanMediaUrl(u) {
+  if (typeof u !== 'string') return '';
+  const s = u.trim().replace(/^[\s`'"]+|[\s`'"]+$/g, '');
+  return /^https?:\/\//i.test(s) ? s : '';
+}
+
 /** 落库：同一 jobId 只写一次（轮询成功可能被重复触发） */
 async function add(userId, work) {
   if (!userId || !work || !work.jobId || !work.videoUrl) return null;
+  work = Object.assign({}, work, { videoUrl: cleanMediaUrl(work.videoUrl) });
+  if (!work.videoUrl) return null;
   const doneKey = 'work:' + work.jobId;
   if (await store.getJson(doneKey)) return null;
   const rec = Object.assign({}, work, {
@@ -61,10 +70,11 @@ function failedRecord(order, provider, jobId, error, refunded) {
 
 /** 由订单记录 + provider 结果拼出作品记录（轮询与补偿扫描共用） */
 function workRecord(order, provider, jobId, videoUrl) {
-  if (!order || !videoUrl) return null;
+  const clean = cleanMediaUrl(videoUrl);
+  if (!order || !clean) return null;
   return {
     jobId: provider + ':' + jobId,
-    videoUrl: videoUrl,
+    videoUrl: clean,
     world: order.world || 'city',
     resolution: order.resolution || '720p',
     role1: order.role1 || 'Image 1',
