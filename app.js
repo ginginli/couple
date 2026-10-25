@@ -1224,8 +1224,26 @@
       var w = appState.works[workIndex];
       if (!w) return;
       var zh = appState.lang === 'zh';
-      var modal = document.getElementById('refund-modal');
       var ref = w.jobId || w.id;
+
+      // 兜底邮件内容：EmailJS 未配置或弹窗节点缺失（新旧版本缓存不一致）时使用
+      var subject = zh ? ('退款申请 - ' + ref) : ('Refund request - ' + ref);
+      var body = [
+        (zh ? '订单/任务编号：' : 'Order / task reference: ') + ref,
+        (zh ? '清晰度：' : 'Resolution: ') + w.resolution,
+        (zh ? '完成时间：' : 'Finished at: ') + (w.createdMs ? new Date(w.createdMs).toISOString() : ''),
+        '',
+        zh ? '付款时使用的邮箱（必填）：' : 'Email used at checkout (required): ',
+        zh ? '退款原因（简单说明即可）：' : 'Reason (brief): '
+      ].join('\n');
+      var mailtoHref = 'mailto:' + REFUND_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+
+      var modal = document.getElementById('refund-modal');
+      if (!modal) { // 页面 HTML 还是旧版（无弹窗节点）时，点击直接打开预填邮件
+        window.open(mailtoHref);
+        return;
+      }
+
       var deadline = new Date((w.createdMs || Date.now()) + REFUND_WINDOW_MS);
       modal.dataset.workIndex = String(workIndex);
       document.getElementById('refund-task-ref').textContent = ref;
@@ -1245,17 +1263,7 @@
       setRefundStatus('', false);
 
       // 兜底：自动发信不可用时，用户仍可点这个预填好的邮件链接手动申请
-      var subject = zh ? ('退款申请 - ' + ref) : ('Refund request - ' + ref);
-      var body = [
-        (zh ? '订单/任务编号：' : 'Order / task reference: ') + ref,
-        (zh ? '清晰度：' : 'Resolution: ') + w.resolution,
-        (zh ? '完成时间：' : 'Finished at: ') + (w.createdMs ? new Date(w.createdMs).toISOString() : ''),
-        '',
-        zh ? '付款时使用的邮箱（必填）：' : 'Email used at checkout (required): ',
-        zh ? '退款原因（简单说明即可）：' : 'Reason (brief): '
-      ].join('\n');
-      document.getElementById('refund-mailto').href =
-        'mailto:' + REFUND_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+      document.getElementById('refund-mailto').href = mailtoHref;
 
       openModalA11y(modal);
     }
