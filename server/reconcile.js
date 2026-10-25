@@ -72,7 +72,21 @@ async function processKey(orderKey, opts) {
   if (!opts || !opts.force) {
     if (age >= 0 && age < MIN_AGE_MS) return 'young';
     if (submittedAt && age > MAX_AGE_MS) {
+      // provider 记录已过期：无法确认成片，按未交付处理，必须退款而不是静默丢弃
       console.error(JSON.stringify({ event: 'reconcile_expired', jobKey: orderKey, ageHours: Math.round(age / 3600000) }));
+      if (!rec.refunded && rec.userId) {
+        await credits.refundUser(rec.userId, rec.cost, 'job_expired');
+        await works.addFailed(rec.userId, works.failedRecord(
+          rec, ref.provider, ref.jobId, 'expired: provider record no longer available', true
+        ));
+        await credits.markOrder(orderKey, Object.assign({}, rec, {
+          refunded: true,
+          completed: true,
+          expired: true,
+          refundedAt: new Date().toISOString()
+        }));
+        console.log(JSON.stringify({ event: 'reconcile_expired_refunded', jobKey: orderKey, userId: rec.userId, credits: rec.cost }));
+      }
       await untrack(rec.userId, orderKey);
       return 'expired';
     }
@@ -106,7 +120,11 @@ async function processKey(orderKey, opts) {
 
   if (state.state === 'failed' || state.state === 'canceled') {
     if (!rec.refunded && rec.userId) {
-      await credits.refundUser(rec.userId, rec.cost, 'job_' + state.state + '_reconcile');
+      const out = await credits.refundUser(rec.userId, rec.cost, 'job_' + state.state + '_reconcile');
+      if (!out || !out.ok) {
+        console.error(JSON.stringify({ event: 'reconcile_refund_failed', jobKey: orderKey, userId: rec.userId, error: out && out.error }));
+        return 'refund_error';
+      }
       console.log(JSON.stringify({ event: 'reconcile_refunded', jobKey: orderKey, userId: rec.userId, credits: rec.cost }));
     }
     // 失败也要在作品库留痕（含补偿扫描路径）
@@ -167,12 +185,32 @@ async function reconcileAll(limit) {
   return out;
 }
 
+/**
+ * 兜底修复：扫所有未终态的订单记录（不依赖待查列表），强制复查。
+ * 用于待查列表丢失、cron 未配置等情况下的人工补跑。
+ */
+async function repairStuck(limit) {
+  const keys = await store.scan('order:job:*', 200);
+  const out = { scanned: keys.length, checked: 0, changed: 0 };
+  const startedAt = Date.now();
+  for (const orderStoreKey of keys.slice(0, limit || 20)) {
+    if (Date.now() - startedAt > 45000) break;
+    const rec = await store.getJson(orderStoreKey);
+    if (!rec || rec.completed || rec.refunded) continue;
+    const r = await processKey(orderStoreKey.slice('order:'.length), { force: true });
+    out.checked++;
+    if (r === 'succeeded' || r === 'failed' || r === 'expired') out.changed++;
+  }
+  return out;
+}
+
 module.exports = {
   track,
   untrack,
   processKey,
   reconcileUser,
   reconcileAll,
+  repairStuck,
   PENDING_ALL,
   MIN_AGE_MS,
   MAX_AGE_MS
