@@ -2,11 +2,72 @@
  * GET /api/ai/status?provider=fal&id=<providerJobId>&token=<hmac>
  * 代理轮询（无状态，不依赖数据库）：把状态与结果透传给前端。
  */
+const { Readable } = require('stream');
 const adapter = require('../../server/provider-adapter');
 const tokens = require('../../server/tokens');
 const credits = require('../../server/credits');
 const works = require('../../server/works');
 const reconcile = require('../../server/reconcile');
+const auth = require('../../server/auth');
+
+const JOB_RE = /^[a-z0-9-]+:[\w.-]+$/i;
+
+/**
+ * GET /api/ai/status?download=1&job=<provider>:<jobId>[&inline=1]
+ *
+ * 成片下载/播放代理。Atlas 的视频存放在阿里云 OSS（atlas-media 桶），
+ * 桶配置了 Referer 防盗链，浏览器直连会被 AccessDenied 拒绝；服务端转发不带 Referer，可正常取流。
+ * 与轮询接口合并为一个 Serverless Function，避免超过 Vercel Hobby 的 12 个函数上限。
+ *
+ * 安全：必须登录，且只能拉取本人作品库中已落库的记录。
+ */
+async function handleDownload(req, res) {
+  const user = await auth.requireUser(req, res);
+  if (!user) return;
+
+  const job = String((req.query && req.query.job) || '');
+  if (!JOB_RE.test(job)) {
+    return res.status(400).json({ ok: false, error: 'bad job id' });
+  }
+
+  const list = await works.list(user.sub, works.MAX_WORKS);
+  const rec = list.find(function (w) { return w && w.jobId === job && w.videoUrl; });
+  if (!rec) {
+    return res.status(404).json({ ok: false, error: 'work not found' });
+  }
+
+  const headers = {};
+  if (req.headers.range) headers.Range = req.headers.range;
+
+  let upstream;
+  try {
+    upstream = await fetch(rec.videoUrl, { headers: headers, redirect: 'follow' });
+  } catch (e) {
+    console.error(JSON.stringify({ event: 'download_fetch_error', job: job, error: e.message }));
+    return res.status(502).json({ ok: false, error: 'upstream fetch failed' });
+  }
+
+  if (!upstream.ok || !upstream.body) {
+    console.error(JSON.stringify({ event: 'download_upstream_error', job: job, status: upstream.status }));
+    return res.status(502).json({ ok: false, error: 'upstream denied: ' + upstream.status });
+  }
+
+  ['content-type', 'content-length', 'content-range', 'accept-ranges', 'etag', 'last-modified']
+    .forEach(function (h) {
+      const v = upstream.headers.get(h);
+      if (v) res.setHeader(h, v);
+    });
+  if (!upstream.headers.get('content-type')) res.setHeader('Content-Type', 'video/mp4');
+
+  const inline = String((req.query && req.query.inline) || '') === '1';
+  const filename = 'zombie-couple-' + job.replace(/[^\w.-]+/g, '_') + '.mp4';
+  res.setHeader('Content-Disposition', (inline ? 'inline' : 'attachment') + '; filename="' + filename + '"');
+  res.setHeader('Cache-Control', 'private, max-age=3600');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+
+  res.status(upstream.status === 206 ? 206 : 200);
+  Readable.fromWeb(upstream.body).pipe(res);
+}
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -14,6 +75,8 @@ module.exports = async function handler(req, res) {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ ok: false, error: 'method not allowed' });
   }
+
+  if (req.query && req.query.download) return handleDownload(req, res);
 
   const { provider, id, token } = req.query || {};
   if (!provider || !id) {

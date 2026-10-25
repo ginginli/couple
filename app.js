@@ -849,9 +849,9 @@
     // EmailJS 配置：用户提交退款申请后自动发信到站长邮箱。
     // 在 https://dashboard.emailjs.com 建好 service + template 后替换下面三个值，
     // 模板变量：order_ref / checkout_email / resolution / finished_at / reason / site
-    var EMAILJS_PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY';
-    var EMAILJS_SERVICE_ID = 'YOUR_EMAILJS_SERVICE_ID';
-    var EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
+    var EMAILJS_PUBLIC_KEY = 'GSJ6kyQuoG4hKbLdk';
+    var EMAILJS_SERVICE_ID = 'service_wpt73fl';
+    var EMAILJS_TEMPLATE_ID = 'template_qbcqham';
 
     function emailJsConfigured() {
       return EMAILJS_PUBLIC_KEY.indexOf('YOUR_') !== 0
@@ -930,6 +930,15 @@
       return /^https?:\/\//i.test(s) ? s : '';
     }
 
+    // OSS 桶开了 Referer 防盗链，浏览器直连会被 AccessDenied 拒绝：
+    // 已落库的作品（有 jobId）下载/播放统一走服务端代理；演示卡片仍用原始地址
+    function mediaProxyUrl(w, inline) {
+      if (w && w.jobId && w.videoUrl) {
+        return '/api/ai/status?download=1&job=' + encodeURIComponent(w.jobId) + (inline ? '&inline=1' : '');
+      }
+      return w && w.videoUrl ? w.videoUrl : '';
+    }
+
     function escHtml(s) {
       return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -985,7 +994,7 @@
             '<button type="button" onclick="openPreviewModalByWork(' + i + ')" class="relative w-full sm:w-36 aspect-[9/16] rounded-xl overflow-hidden bg-zinc-900 shrink-0 group">' +
               '<img src="' + escHtml(w.coverSrc) + '" alt="' + escHtml(w.title) + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform" />' +
               (w.videoUrl
-                ? '<video src="' + escHtml(w.videoUrl) + '" poster="' + escHtml(w.coverSrc) + '" muted loop playsinline preload="metadata" data-autoplay-video tabindex="-1" aria-hidden="true" class="w-full h-full object-cover" onerror="this.style.display=\'none\'"></video>'
+                ? '<video src="' + escHtml(mediaProxyUrl(w, true)) + '" poster="' + escHtml(w.coverSrc) + '" muted loop playsinline preload="metadata" data-autoplay-video tabindex="-1" aria-hidden="true" class="w-full h-full object-cover" onerror="this.style.display=\'none\'"></video>'
                 : '') +
               '<div class="absolute inset-0 bg-black/35 flex items-center justify-center">' +
                 '<div class="w-10 h-10 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg">' +
@@ -1012,7 +1021,7 @@
                   t('playClip') +
                 '</button>' +
                 (w.videoUrl
-                  ? '<a href="' + escHtml(w.videoUrl) + '" download target="_blank" rel="noopener" class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)] text-[var(--color-text)] text-xs font-semibold transition-colors">' + t('downloadVideo') + '</a>'
+                  ? '<a href="' + escHtml(mediaProxyUrl(w)) + '" download class="px-3 py-1.5 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)] text-[var(--color-text)] text-xs font-semibold transition-colors">' + t('downloadVideo') + '</a>'
                   : '') +
                 (refundEligible(w)
                   ? '<button type="button" onclick="openRefundModal(' + i + ')" aria-haspopup="dialog" class="inline-flex items-center px-2 min-h-[48px] text-[var(--color-text-muted)] hover:text-rose-400 text-xs font-semibold underline decoration-dotted underline-offset-4 transition-colors">' + t('requestRefund') + '</button>'
@@ -1177,7 +1186,7 @@
       appState.player.currentTime = 0;
       appState.player.lastBeatTime = -1;
       appState.player.pianoPlayed = false;
-      showPlayerMedia(w.videoUrl, w.coverSrc);
+      showPlayerMedia(mediaProxyUrl(w, true), w.coverSrc);
     }
 
     // 退款申请弹窗：用户填付款邮箱 + 原因直接提交，EmailJS 自动发信到站长邮箱（mailto 兜底）
