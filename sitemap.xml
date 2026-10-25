@@ -3,14 +3,14 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.zombie-couple.xyz/</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://www.zombie-couple.xyz/" />
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.zombie-couple.xyz/zh/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.zombie-couple.xyz/" />
   </url>
   <url>
     <loc>https://www.zombie-couple.xyz/zh/</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.zombie-couple.xyz/zh/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://www.zombie-couple.xyz/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.zombie-couple.xyz/" />
@@ -72,6 +72,12 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://www.zombie-couple.xyz/contact.html" />
   </url>
   <url>
+    <loc>https://www.zombie-couple.xyz/about.html</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
     <loc>https://www.zombie-couple.xyz/alternatives.html</loc>
     <lastmod>2026-10-22</lastmod>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.zombie-couple.xyz/alternatives.html" />
@@ -101,13 +107,13 @@
   </url>
   <url>
     <loc>https://www.zombie-couple.xyz/blog/</loc>
-    <lastmod>2026-10-22</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.zombie-couple.xyz/blog/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://www.zombie-couple.xyz/blog/" />
   </url>
   <url>
     <loc>https://www.zombie-couple.xyz/blog/best-ai-zombie-couple-video-generators.html</loc>
-    <lastmod>2026-10-22</lastmod>
+    <lastmod>2026-10-25</lastmod>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.zombie-couple.xyz/blog/best-ai-zombie-couple-video-generators.html" />
     <xhtml:link rel="alternate" hreflang="en" href="https://www.zombie-couple.xyz/blog/best-ai-zombie-couple-video-generators.html" />
   </url>

@@ -9,42 +9,55 @@ Disallow: /api/
 # ── 搜索与 AI 答案引擎（引用来源，务必放行）─────────────────────
 User-agent: Googlebot
 Allow: /
+Disallow: /api/
 
 User-agent: Googlebot-Image
 Allow: /
+Disallow: /api/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /api/
 
 User-agent: DuckDuckBot
 Allow: /
+Disallow: /api/
 
 User-agent: DuckAssistBot
 Allow: /
+Disallow: /api/
 
 User-agent: Applebot
 Allow: /
+Disallow: /api/
 
 User-agent: OAI-SearchBot
 Allow: /
+Disallow: /api/
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /api/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /api/
 
 User-agent: Perplexity-User
 Allow: /
+Disallow: /api/
 
 User-agent: Claude-SearchBot
 Allow: /
+Disallow: /api/
 
 User-agent: Claude-User
 Allow: /
+Disallow: /api/
 
 User-agent: MistralAI-User
 Allow: /
+Disallow: /api/
 
 User-agent: YouBot
 Allow: /
@@ -52,38 +65,50 @@ Allow: /
 # ── AI 训练爬虫（影响模型对品牌的长期记忆，默认放行）─────────────
 User-agent: GPTBot
 Allow: /
+Disallow: /api/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /api/
 
 User-agent: Claude-Web
 Allow: /
+Disallow: /api/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /api/
 
 User-agent: Applebot-Extended
 Allow: /
+Disallow: /api/
 
 User-agent: Amazonbot
 Allow: /
+Disallow: /api/
 
 User-agent: Meta-ExternalAgent
 Allow: /
+Disallow: /api/
 
 User-agent: Meta-ExternalFetcher
 Allow: /
+Disallow: /api/
 
 User-agent: cohere-ai
 Allow: /
+Disallow: /api/
 
 User-agent: CCBot
 Allow: /
+Disallow: /api/
 
 User-agent: Bytespider
 Allow: /
+Disallow: /api/
 
 User-agent: Diffbot
 Allow: /
+Disallow: /api/
 
 Sitemap: https://www.zombie-couple.xyz/sitemap.xml

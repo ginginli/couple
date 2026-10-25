@@ -31,6 +31,18 @@
   <link rel="stylesheet" href="../tailwind.css" />
   <link rel="stylesheet" href="../style.css" />
   <link id="zc-theme-stylesheet" rel="stylesheet" href="../zctheme.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://www.zombie-couple.xyz/#website",
+    "url": "https://www.zombie-couple.xyz/",
+    "name": "zombie-couple.xyz",
+    "inLanguage": "en",
+    "publisher": { "@id": "https://www.zombie-couple.xyz/#organization" }
+  }
+  </script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -66,7 +78,7 @@
 </head>
 <body class="min-h-screen font-sans bg-[var(--color-bg)] text-[var(--color-text)] antialiased">
   <header class="site-header sticky top-0 z-30 h-14 shrink-0 border-b border-[var(--color-border)] bg-[var(--color-bg)]/85 backdrop-blur-md px-3 sm:px-5 flex items-center justify-between gap-2">
-    <a href="../" class="flex items-center gap-2.5 text-left group focus:outline-none">
+    <a href="../" class="flex items-center gap-2.5 text-left group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]">
       <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500 to-amber-500 flex items-center justify-center shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform shrink-0">
         <span class="text-lg">🧟</span>
       </div>
@@ -82,6 +94,13 @@
   </header>
 
   <main class="mx-auto max-w-3xl px-4 sm:px-6 py-10 sm:py-14">
+    <nav class="mb-4 text-xs text-[var(--color-text-muted)]" aria-label="Breadcrumb">
+      <ol class="flex flex-wrap items-center gap-2">
+        <li><a class="hover:text-[var(--color-text)] transition-colors" href="../">Home</a></li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page">Guides</li>
+      </ol>
+    </nav>
     <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Zombie couple video guides</h1>
     <p class="mt-2 text-sm leading-relaxed text-[var(--color-text)]/85">
       One running comparison, checked against each provider's own pages. No affiliate links, no scores we invented.
@@ -115,6 +134,7 @@
       <a href="../" class="hover:text-[var(--color-text)] transition-colors">Home</a>
       <a href="../alternatives.html" class="hover:text-[var(--color-text)] transition-colors">Alternatives</a>
       <a href="../press.html" class="hover:text-[var(--color-text)] transition-colors">Press kit</a>
+      <a href="../about.html" class="hover:text-[var(--color-text)] transition-colors">About</a>
       <a href="../terms.html" class="hover:text-[var(--color-text)] transition-colors">Terms</a>
       <a href="../contact.html" class="hover:text-[var(--color-text)] transition-colors">Contact</a>
     </nav>

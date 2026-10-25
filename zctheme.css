@@ -29,6 +29,7 @@
   --zc-bone: #15181a;
   --zc-bone-dim: #5e6663;
   --zc-infect: #c8123a;
+  --zc-infect-solid: #b00f34;
   --zc-ember: #a35c00;
   --zc-toxic: #0f7a45;
 
@@ -47,6 +48,9 @@ html.dark {
   --zc-bone: #e9e7df;
   --zc-bone-dim: #98a09c;
   --zc-infect: #ff2f52;
+  --zc-infect-solid: #c8123a;
+  --color-accent: #ff5b74;
+  --color-accent-hover: #ff8093;
   --zc-ember: #ffb454;
   --zc-toxic: #5ee08a;
   --zc-glow-infect: 0 0 0 1px rgba(255, 47, 82, 0.35), 0 12px 34px -14px rgba(255, 47, 82, 0.55);
@@ -284,8 +288,8 @@ footer,
 .zc-badge--ember { color: var(--zc-ember); border-color: color-mix(in srgb, var(--zc-ember) 45%, transparent); background: color-mix(in srgb, var(--zc-ember) 14%, transparent); }
 .zc-badge--toxic { color: var(--zc-toxic); border-color: color-mix(in srgb, var(--zc-toxic) 45%, transparent); background: color-mix(in srgb, var(--zc-toxic) 14%, transparent); }
 .zc-badge--solid {
-  background: var(--zc-infect);
-  border-color: var(--zc-infect);
+  background: var(--zc-infect-solid);
+  border-color: var(--zc-infect-solid);
   color: #fff;
 }
 
@@ -576,7 +580,7 @@ footer,
 .zc-prose p { margin: 0 0 0.9rem; }
 .zc-prose h2,
 .zc-prose h3 { font-family: var(--zc-font-display); text-transform: uppercase; letter-spacing: 0.02em; color: var(--zc-bone); }
-.zc-prose a { color: var(--zc-infect); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--zc-infect) 45%, transparent); }
+.zc-prose a { color: var(--color-accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--zc-infect) 45%, transparent); }
 .zc-prose a:hover { color: var(--zc-ember); border-color: var(--zc-ember); }
 
 /* Tab / Toast / 播放器 / 弹窗 */
@@ -671,13 +675,13 @@ footer,
 .zc-usecase__time--amber { color: var(--zc-ember); }
 
 .zc-chip--primary {
-  background: var(--zc-infect);
-  border-color: var(--zc-infect);
+  background: var(--zc-infect-solid);
+  border-color: var(--zc-infect-solid);
   color: #fff;
 }
 .zc-chip--primary:hover {
-  background: color-mix(in srgb, var(--zc-infect) 85%, #fff);
-  border-color: var(--zc-infect);
+  background: color-mix(in srgb, var(--zc-infect-solid) 85%, #fff);
+  border-color: var(--zc-infect-solid);
   color: #fff;
 }
 

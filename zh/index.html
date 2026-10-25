@@ -2,8 +2,8 @@
 <html lang="zh-CN" class="dark">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
-  <meta name="robots" content="index,follow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1" />
   <meta name="theme-color" content="#09090b" />
   <meta name="theme-color" content="#f43f5e" media="(prefers-color-scheme: light)" />
 
@@ -58,11 +58,13 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-rose-500 selection:text-white">
 
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 z-50 rounded-lg bg-[var(--color-surface-elevated)] px-3 py-2 text-sm font-semibold text-[var(--color-text)] border border-[var(--color-border)]">跳到主要内容</a>
+
   <!-- Top Navigation Header -->
   <header class="site-header sticky top-0 z-30 h-14 shrink-0 border-b border-[var(--color-border)] bg-[var(--color-bg)]/85 backdrop-blur-md px-3 sm:px-5 flex items-center justify-between gap-2">
     <!-- Left: Brand Logo & Domain Badge -->
     <div class="flex items-center gap-3 min-w-0">
-      <button type="button" onclick="switchRightTab('tutorial')" class="flex items-center gap-2.5 text-left group focus:outline-none">
+      <button type="button" onclick="switchRightTab('tutorial')" class="flex items-center gap-2.5 text-left group rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500 to-amber-500 flex items-center justify-center shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -128,7 +130,7 @@
   </header>
 
   <!-- Main Two-Column Workspace Layout (Matches ZOOOP Template Page 1:1) -->
-  <main class="flex-1 flex flex-col md:flex-row gap-3 p-2 sm:p-3 max-w-[1600px] w-full mx-auto md:h-[calc(100vh-3.5rem)] md:overflow-hidden">
+  <main id="main" tabindex="-1" class="flex-1 flex flex-col md:flex-row gap-3 p-2 sm:p-3 max-w-[1600px] w-full mx-auto md:h-[calc(100vh-3.5rem)] md:overflow-hidden">
 
     <!-- LEFT PANEL: Generator Controls (400px on Desktop) -->
     <aside class="zc-panel w-full md:w-[400px] lg:w-[520px] xl:w-[580px] shrink-0 flex flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] md:h-full md:overflow-hidden shadow-sm">
@@ -307,11 +309,11 @@
       <!-- Top Tabs: 作品 (Works) | 教程 (Tutorial) -->
       <div class="shrink-0 px-4 pt-3 border-b border-[var(--color-border)] flex items-center justify-between">
         <div role="tablist" class="flex items-center gap-2">
-          <button type="button" role="tab" id="tab-btn-works" onclick="switchRightTab('works')" class="zc-tab">
+          <button type="button" role="tab" id="tab-btn-works" aria-controls="panel-works" aria-selected="false" tabindex="-1" onclick="switchRightTab('works')" class="zc-tab">
             <span data-i18n="tabWorks">作品</span>
             <span id="works-count-badge" class="zc-badge zc-badge--infect">1</span>
           </button>
-          <button type="button" role="tab" id="tab-btn-tutorial" onclick="switchRightTab('tutorial')" class="zc-tab is-active">
+          <button type="button" role="tab" id="tab-btn-tutorial" aria-controls="panel-tutorial" aria-selected="true" onclick="switchRightTab('tutorial')" class="zc-tab is-active">
             <span data-i18n="tabTutorial">教程与效果示例</span>
           </button>
         </div>
@@ -328,10 +330,10 @@
       <div id="right-scroll-container" class="flex-1 overflow-y-auto">
 
         <!-- TAB PANEL 1: TUTORIAL & SEO CONTENT (Default Active) -->
-        <div id="panel-tutorial" class="max-w-4xl mx-auto px-4 sm:px-8 py-6 space-y-11">
+        <div id="panel-tutorial" role="tabpanel" aria-labelledby="tab-btn-tutorial" tabindex="0" class="max-w-4xl mx-auto px-4 sm:px-8 py-6 space-y-11">
           
           <!-- Hero Header: the generator itself -->
-          <header id="sec-generator" class="zc-hero zc-reveal space-y-3">
+          <header id="sec-generator" class="zc-hero space-y-3">
             <div class="zc-badge zc-badge--infect zc-flicker">
               <span>🧟‍♂️❤️🧟‍♀️</span>
               <span data-i18n="heroBadge">AI 视频生成器 · zombie-couple.xyz</span>
@@ -631,6 +633,7 @@
               <a href="terms.html" class="hover:text-[var(--color-text)] transition-colors">服务条款</a>
               <a href="alternatives.html" class="hover:text-[var(--color-text)] transition-colors">对比</a>
               <a href="../blog/" class="hover:text-[var(--color-text)] transition-colors">攻略</a>
+              <a href="../about.html" class="hover:text-[var(--color-text)] transition-colors">关于</a>
               <a href="refund.html" class="hover:text-[var(--color-text)] transition-colors">退款政策</a>
               <a href="contact.html" class="hover:text-[var(--color-text)] transition-colors">联系我们</a>
               <a href="https://gravatar.com/clearlyflower20e1ad97e4" target="_blank" rel="noopener noreferrer"
@@ -645,7 +648,7 @@
         </div>
 
         <!-- TAB PANEL 2: WORKS / GENERATED VIDEOS -->
-        <div id="panel-works" class="hidden max-w-4xl mx-auto px-4 sm:px-8 py-6 space-y-6">
+        <div id="panel-works" role="tabpanel" aria-labelledby="tab-btn-works" tabindex="0" class="hidden max-w-4xl mx-auto px-4 sm:px-8 py-6 space-y-6">
           
           <!-- Active Generation Progress Card (Hidden unless generating) -->
           <div id="generation-progress-card" class="hidden rounded-2xl border-2 border-rose-500/50 bg-[var(--color-surface)] p-5 space-y-4 shadow-lg">
@@ -691,7 +694,7 @@
   </main>
 
   <!-- MODAL 1: Interactive 13-Second 4-Shot Cinema Player (with Web Audio Heartbeat -> Piano) -->
-  <div id="cinema-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6">
+  <div id="cinema-modal" role="dialog" aria-modal="true" aria-labelledby="player-modal-title" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6">
     <div class="relative w-full max-w-3xl rounded-2xl border border-zinc-800 bg-zinc-950 text-white overflow-hidden shadow-2xl flex flex-col md:flex-row">
       
       <!-- Left: 9:16 Animated Storyboard Viewport -->
@@ -797,12 +800,12 @@
   </div>
 
   <!-- MODAL 2: Credit Top-Up & Pricing Modal -->
-  <div id="topup-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="topup-modal" role="dialog" aria-modal="true" aria-labelledby="topup-modal-title" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-xl rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-6 shadow-2xl space-y-5">
       <div class="flex items-start justify-between">
         <div>
           <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-400 text-xs font-bold">3 种积分包 · 积分不过期</span>
-          <p class="text-xl font-extrabold text-[var(--color-text)] mt-1">购买创作积分 · 按需付费</p>
+          <p id="topup-modal-title" class="text-xl font-extrabold text-[var(--color-text)] mt-1">购买创作积分 · 按需付费</p>
           <p class="text-xs text-[var(--color-text-muted)] mt-0.5">无月费、无强制订阅，购买的积分永久有效，随时用于生成视频。</p>
         </div>
         <button type="button" onclick="closeTopupModal()" class="p-1.5 rounded-lg bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]">✕</button>
@@ -864,12 +867,12 @@
   </div>
 
   <!-- MODAL 3: Developer API & Domain Deployment Guide (zombie-couple.xyz) -->
-  <div id="api-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="api-modal" role="dialog" aria-modal="true" aria-labelledby="api-modal-title" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-3xl max-h-[88vh] overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-6 shadow-2xl space-y-5">
       <div class="flex items-start justify-between">
         <div>
           <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-bold">站长专属配置面板</span>
-          <p class="text-xl font-extrabold text-[var(--color-text)] mt-1">zombie-couple.xyz 部署与大模型 API 接入指南</p>
+          <p id="api-modal-title" class="text-xl font-extrabold text-[var(--color-text)] mt-1">zombie-couple.xyz 部署与大模型 API 接入指南</p>
           <p class="text-xs text-[var(--color-text-muted)] mt-0.5">已为你预置原站 1:1 配方参数（Recipe JSON）与后端调用代码。</p>
         </div>
         <button type="button" onclick="closeApiModal()" class="p-1.5 rounded-lg bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]">✕</button>
@@ -915,7 +918,7 @@
       <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-3">
         <p class="text-sm font-bold text-[var(--color-text)]">3. 配置你的后端 API 代理地址（可选）</p>
         <div class="flex flex-col sm:flex-row gap-2">
-          <input id="custom-api-endpoint" type="text" placeholder="https://api.zombie-couple.xyz/v1/generate" value="/api/ai/templates" class="flex-1 px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[var(--color-text)] focus:outline-none focus:border-rose-500" />
+          <input id="custom-api-endpoint" type="text" aria-label="自定义 API 接口地址" placeholder="https://api.zombie-couple.xyz/v1/generate" value="/api/ai/templates" class="flex-1 px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-xs text-[var(--color-text)] focus:outline-none focus:border-rose-500" />
           <button type="button" onclick="saveApiEndpoint()" class="px-4 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold shrink-0">
             保存接口配置
           </button>
@@ -927,6 +930,6 @@
   <!-- Toast Notification Banner -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
 
-  <script src="../app.js"></script>
+  <script src="../app.js" defer></script>
 </body>
 </html>
