@@ -6,9 +6,18 @@
  * prompt 由这里组装后直送 provider，不经过浏览器，也不出现在任何响应里。
  */
 
+// 场景描述要够具体：只写「一条废弃街道」时，模型容易自己想象成别的街道。
+// 这段文字会同时出现在 LOCATION 段和 Shot 1，把两个场景的地貌差异钉死。
 const WORLD_SETTINGS = {
-  city: 'an abandoned city street',
-  highway: 'an empty highway lined with abandoned cars'
+  city: 'an abandoned city street with rubble and rusted cars',
+  highway: 'an empty highway lined with abandoned cars on cracked asphalt'
+};
+
+// 每个 shot 里复述场景用的短写法：镜头之间反复提到同一个地点，
+// 后段镜头才不会漂到模型自己想象的默认场景去。用短句是为了守住 2500 字符上限。
+const WORLD_SHORT_SETTINGS = {
+  city: 'the ruined city street',
+  highway: 'the empty highway'
 };
 
 // 场景 → 参考视频（三条示例短片，页面上的卡片标题与之一一对应）。
@@ -24,21 +33,30 @@ function refVideoFor(world) {
 }
 
 // Atlas 的 prompt 上限是 2500 字符（超出直接 ret:1201 失败），这里必须留余量
+// 实测教训（2026-10-25，job f58380bcc7264851a798f98beebad934）：不写明「参考视频里的
+// 角色必须被替换」，Kling 会把任务理解成复刻参考视频，直接沿用示例片里的角色，两张
+// 参考图被完全忽略 —— 所以 CHARACTERS FIRST 段落是整份 prompt 里最关键的一段，不能删。
 const BASE_PROMPT_TEMPLATE =
   "A 13-second, four-shot cinematic short film about a viral outbreak. @Image1 is the infected loved one, @Image2 the survivor.\n\n" +
-  "HOW @Image1 LOOKS NOW: exactly the same person - same face shape, eyes, nose, mouth, hairstyle, facial hair, glasses if any, age and clothes, now dusty and frayed. The infection only drains colour, like careful film makeup on an intact face: ash-grey skin, faint dark veins at temples and neck, milky white eyes, dry lips, messy dusty hair. The face stays smooth, whole and fully human, so anyone who knows them recognizes it at a glance. If @Image1 is a pet, keep the same breed, size, fur colour, markings and collar, coat dusty and greyed, eyes milky white. The survivor from @Image2 is never infected: eyes, skin and face stay completely normal in every shot.\n\n" +
-  "LOCATION AND CAMERA: every shot keeps the exact place, weather, light and colour of reference clip @Video1 - same streets, buildings, ground and sky. Copy its camera language: same framing, same slow steady movement. Never move them elsewhere.\n\n" +
-  "Shot 1 (0-2s): dusk in {setting}, cold grey fog. Close-up on the infected @Image1 slowly shuffling out of the fog toward camera, face filling the frame and coming into focus: unmistakably @Image1.\n\n" +
-  "Shot 2 (2-6s): close on the survivor aiming a handgun with both trembling hands at the infected figure. Tears run down their face, their jaw shakes, they cannot pull the trigger, then slowly lower the gun and drop it.\n\n" +
-  "Shot 3 (6-10s): a wide, fixed side-on shot with both in frame about ten metres apart. The infected @Image1 flings its arms wide open and sprints at the survivor, fast and ferocious, snarling, covering the whole distance (a pet races toward them instead). The survivor stays put, eyes closed, arms opening.\n\n" +
-  "Shot 4 (10-13s): on impact, a seamless cut on the same camera angle to the same place on a warm, sunny day before the outbreak. Momentum carries on: @Image1, healthy and looking exactly like their photo, tackles the survivor; they tumble onto the ground and lie there wrapped in a hug, laughing, in golden light (a pet knocks them over and they roll around together).\n\n" +
-  "Audio: natural ambient sound of reference clip @Video1 throughout; no added music, no dialogue. Photorealistic, film grain, cinematic lighting. The gun is never fired. No blood, no gore, no wounds, no kissing, no text, no logos.";
+  "CHARACTERS FIRST: the only characters are @Image1 (infected) and @Image2 (survivor), looking exactly like their photos. @Video1 gives ONLY place, weather, light and camera work; no person or animal from @Video1 may appear - every role is recast from the two photos.\n\n" +
+  "HOW @Image1 LOOKS NOW: exactly the same person - same face, hairstyle, age and clothes, now dusty and frayed. Infection only drains colour, like film makeup on an intact face: ash-grey skin, faint dark veins, milky white eyes. The face stays whole, human and recognizable. If @Image1 is a pet, keep the same breed, size, fur colour, markings and collar, coat dusty and greyed, eyes milky white. @Image2 is never infected: eyes, skin and face stay completely normal in every shot.\n\n" +
+  "LOCATION AND CAMERA: {setting}. Every shot stays in that exact place and keeps the weather, light and colour of @Video1: same ground, sky, framing and slow steady movement. Never move them elsewhere.\n\n" +
+  "Shot 1 (0-2s): dusk on {short}, cold grey fog. Close-up: the infected @Image1 shuffles out of the fog toward camera, face filling the frame: unmistakably @Image1.\n\n" +
+  "Shot 2 (2-6s): on {short}, close on @Image2 aiming a handgun with both trembling hands at the infected figure. Tears run down their face; they cannot pull the trigger, then lower the gun and drop it.\n\n" +
+  "Shot 3 (6-10s): on {short}, a wide fixed side-on shot, both in frame ten metres apart. The infected @Image1 flings its arms wide, sprints at @Image2, fast and ferocious, covering the whole distance (a pet races toward them instead). @Image2 stays put, eyes closed, arms opening.\n\n" +
+  "Shot 4 (10-13s): on {short}, a seamless cut on the same angle to a warm sunny day before the outbreak. @Image1, healthy, exactly like their photo, tackles @Image2; they tumble onto the ground wrapped in a hug, laughing, in golden light (a pet knocks them over and they roll around together).\n\n" +
+  "Audio: natural ambient sound of @Video1 throughout; no added music, no dialogue. Photorealistic, film grain, cinematic lighting. The gun is never fired. No blood, no gore, no wounds, no kissing, no text, no logos.";
 
 function buildPrompt(input) {
   const raw = (input && (input.world || input.setting)) || 'city';
   // 未知场景一律回落 city：否则会把未知场景名当成描述文字直接塞进 prompt
   const setting = WORLD_SETTINGS[raw] || WORLD_SETTINGS.city;
-  return BASE_PROMPT_TEMPLATE.replace('{setting}', setting);
+  const short = WORLD_SHORT_SETTINGS[raw] || WORLD_SHORT_SETTINGS.city;
+  // {setting} 与 {short} 都出现多次，必须全量替换：用 replace(字符串) 只会换掉第一个，
+  // 后面的会以 "{short}" 原文漏进 prompt
+  return BASE_PROMPT_TEMPLATE.split('{setting}').join(setting).split('{short}').join(short);
 }
 
-module.exports = { buildPrompt, refVideoFor, WORLD_SETTINGS, WORLD_REF_VIDEO };
+module.exports = {
+  buildPrompt, refVideoFor, WORLD_SETTINGS, WORLD_SHORT_SETTINGS, WORLD_REF_VIDEO
+};
